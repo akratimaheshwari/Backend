@@ -1,4 +1,4 @@
-import ReturnRequest from '../models/returnRequest.js';
+import ReturnRequest from '../models/returnrequest.js';
 
 export const requestReturn = async (req, res) => {
   const { order_id, reason } = req.body;
