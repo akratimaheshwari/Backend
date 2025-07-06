@@ -15,8 +15,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node mongoDb_Schema-server.js",
-    "server": "nodemon mongoDb_Schema-server.js"
+    "start": "node MongoDb_Schema-server.js",
+    "server": "nodemon MongoDb_Schema-server.js"
 
   },
   "author": "",
