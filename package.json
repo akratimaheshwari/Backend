@@ -16,7 +16,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "server": "mongoDb_Schema-server.js"
+
   },
   "author": "",
   "license": "ISC",
