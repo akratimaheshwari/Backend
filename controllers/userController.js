@@ -8,18 +8,21 @@
 //     res.status(400).json({ error: err.message });
 //   }
 // };
-
-// exports.getAllUsers = async (req, res) => {
-//   try {
-//     const users = await User.find();
-//     res.status(200).json(users);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 import bcrypt from 'bcryptjs';
 import User from '../models/user.js';  // Make sure path is correct
 import jwt from 'jsonwebtoken';
+export const getAllUsers = async (req, res) => {
+  try {
+    console.log("🔍 Admin fetching all users");
+    const users = await User.find().select('-password'); // hide password
+    console.log("✅ Total users found:", users.length);
+    res.status(200).json(users);
+  } catch (err) {
+    console.error("❌ Error in getAllUsers:", err.message);
+    res.status(500).json({ message: 'Failed to fetch users', error: err.message });
+  }
+};
+
 
 export const createUser = async (req, res) => {
   try {

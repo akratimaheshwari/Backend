@@ -35,7 +35,7 @@ app.use(cors())
 app.use(express.static(path.join(__dirname, 'client')));
 
 app.use(express.urlencoded({ extended: true }));
-
+console.log("✅ JWT_SECRET in server.js:",process.env.JWT_SECRET);
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/orders', orderRoutes);
