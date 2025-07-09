@@ -15,11 +15,13 @@ export const createOrder = async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+  console.log("User making order:", req.user);
+
 };
 
 export const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ renter_id: req.user._id })
+    const orders = await Order.find({ renter_id: req.user.id })
       .populate('renter_id', 'name email phone')
       .populate('item_id', 'title description pricing rental_start_date rental_end_date quantity');
 
