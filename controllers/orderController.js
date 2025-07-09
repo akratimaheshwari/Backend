@@ -5,7 +5,7 @@ export const createOrder = async (req, res) => {
     const { item_id, delivery_date, delivery_slot } = req.body;
 
     const order = await Order.create({
-      renter_id: req.user._id, //  comes from token
+      renter_id: req.user.id, //  comes from token
       item_id,
       delivery_date,
       delivery_slot
