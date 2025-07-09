@@ -15,7 +15,7 @@ export const createItem = async (req, res) => {
       pricing,
       condition,
       category,
-      images,
+      image: req.file?.path ,
       rental_start_date,
       rental_end_date,
       quantity

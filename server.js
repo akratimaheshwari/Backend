@@ -32,7 +32,7 @@ app.use(cors())
 
 // Routes
 // app.use(express.static('client'));// login
-app.use(express.static(path.join(__dirname, 'client')));
+
 
 app.use(express.urlencoded({ extended: true }));
 console.log("✅ JWT_SECRET in server.js:",process.env.JWT_SECRET);
@@ -52,23 +52,27 @@ app.get('/', (req, res) => {
   res.status(200).send('Welcome to Rentkart Backend API');
 });
 
+app.use(express.static(path.join(__dirname, 'client')));
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'login.html'));
 });
 app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'signup.html'));
 });
+// app.get('/api/test', (req, res) => {
+//   res.send('✅ Test route working');
+// });
 
 app.use((req, res) => {
   res.status(404).send('Page Not Found' );
 });
 
+
 const startServer = async () => {
   await connectDB();
-
   app.listen(process.env.PORT || 3000, () => {
     console.log(`Server running on port ${process.env.PORT || 3000}`);
   });
 };
 
-startServer();
+startServer(); // ✅ call the function here

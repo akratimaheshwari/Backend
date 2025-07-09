@@ -21,7 +21,7 @@ const itemSchema = new mongoose.Schema({
  
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-  images: [String],
+  images: {type: Array,required:true},
   status: { type: String, enum: ['available', 'rented', 'maintenance'], default: 'available' },
   quantity: { type: Number, default: 1 },
   rental_start_date: Date,
