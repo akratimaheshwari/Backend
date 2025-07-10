@@ -36,7 +36,7 @@ app.use(cors())
 
 app.use(express.urlencoded({ extended: true }));
 console.log("✅ JWT_SECRET in server.js:",process.env.JWT_SECRET);
-app.use('/api/users', userRoutes);
+
 app.use('/api/items', itemRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -46,18 +46,24 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/reviews', reviewRoutes);
-app.use('/api/cart', cartRoutes);
-
-app.get('/', (req, res) => {
-  res.status(200).send('Welcome to Rentkart Backend API');
-});
 
 app.use(express.static(path.join(__dirname, 'client')));
+app.use('/api/users', userRoutes);
+app.use('/api/cart', cartRoutes);
+
+// app.get('/', (req, res) => {
+//   res.status(200).send('Welcome to Rentkart Backend API');
+// });
+
+
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'login.html'));
 });
 app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'signup.html'));
+});
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "home.html"));
 });
 // app.get('/api/test', (req, res) => {
 //   res.send('✅ Test route working');

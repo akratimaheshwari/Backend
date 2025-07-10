@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RentKart</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"
+></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f7f7f7;
+    }
+
+    header {
+      background: #fff;
+      padding: 20px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header h1 {
+      color: #333;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 60px 50px;
+      background: linear-gradient(to right, #f1da36, #fca86c);
+    }
+   
+
+    .hero-text {
+      max-width: 50%;
+    }
+
+    .hero-text h2 {
+      font-size: 3rem;
+      color: #222;
+      margin-bottom: 20px;
+    }
+
+    .hero-text p {
+      font-size: 1.2rem;
+      color: #444;
+      margin-bottom: 30px;
+    }
+
+    .hero-text button {
+      padding: 12px 25px;
+      background: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 5px;
+    }
+
+    .hero img {
+      max-width: 45%;
+    }
+
+    .section-title {
+      text-align: center;
+      margin: 60px 0 20px;
+      font-size: 2rem;
+      color: #222;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+      padding: 0 50px 60px;
+    }
+
+    .product {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .product:hover {
+      transform: translateY(-5px);
+    }
+
+    .product img {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+      margin-bottom: 15px;
+    }
+
+    .product h4 {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .product p {
+      color: #777;
+      font-size: 0.9rem;
+    }
+
+    .product .price {
+      margin: 10px 0;
+      font-weight: bold;
+      color: #111;
+    }
+
+    .product button {
+      padding: 8px 20px;
+      background: #fca86c;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    footer {
+      background: #333;
+      color: #fff;
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 60px;
+    }
+
+    footer p {
+      font-size: 0.9rem;
+    }
+    .shop-now-btn {
+  display: inline-block;
+  background: linear-gradient(to right, #fda31c, #f22a2a);
+  color: white;
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.shop-now-btn:hover {
+  background: linear-gradient(to right, #e0b82e, #fc9050);
+  text-decoration: none;
+}
+
+
+    @media (max-width: 768px) {
+      .hero {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 30px;
+      }
+
+      .hero img {
+        max-width: 100%;
+        margin-bottom: 30px;
+      }
+
+      .hero-text {
+        max-width: 100%;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      nav {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+  <h1>RentKart</h1>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Items</a>
+    <a href="cart.html">Cart</a>
+    <a href="#">Orders</a>
+    <a href="signup.html" >Signup/Login</a>
+  </nav>
+</header>
+
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <h2>Rent What You Need,When You Need It!</h2>
+      <p>Explore a wide range of items at unbeatable prices. Fast shipping.</p>
+     <a href="items.html" class="shop-now-btn">Shop Now</a>
+    </div>
+    <img src="https://img.freepik.com/free-vector/shopping-online-banner_33099-1721.jpg" alt="E-commerce illustration">
+  </section>
+
+  <!-- Featured Products -->
+  <h2 class="section-title">Featured Items</h2>
+  <section class="products">
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1606813903265-d5d33db4e16a" alt="Product 1">
+      <h4>AC</h4>
+      <p></p>
+      <div class="price"></div>
+      <button>Add to Cart</button>
+    </div>
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1580910051073-6f7e96d6f9a7" alt="Product 2">
+      <h4>Wireless Headphones</h4>
+      <p>Noise Cancelling, 20h Battery</p>
+      <div class="price">$79.99</div>
+      <button>Add to Cart</button>
+    </div>
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1610432019231-2a1ebf489b27" alt="Product 3">
+      <h4>Running Shoes</h4>
+      <p>Comfortable, Lightweight, Unisex</p>
+      <div class="price">$59.00</div>
+      <button>Add to Cart</button>
+    </div>
+    <div class="product">
+      <img src="https://images.unsplash.com/photo-1585386959984-a4155227c707" alt="Product 4">
+      <h4>Backpack</h4>
+      <p>Water Resistant, Laptop Compartment</p>
+      <div class="price">$49.99</div>
+      <button>Add to Cart</button>
+    </div>
+  </section>
+ 
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 RentKart. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
