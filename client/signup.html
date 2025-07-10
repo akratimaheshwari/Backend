@@ -2,149 +2,137 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Registration Page</title>
-
-  <!-- Bootstrap CSS -->
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,700&display=swap" rel="stylesheet" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signup - RentKart</title>
+  <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
   <style>
+    *, *:before, *:after {
+      box-sizing: border-box;
+    }
+
     body {
+      min-height: 100vh;
+      font-family: "Raleway", sans-serif;
       margin: 0;
-      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.4"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
-      font-family: 'PT Sans', sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: #fff9d9;
     }
 
-    .register-card {
-      display: flex;
-      background: white;
-      border-radius: 2rem;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      width: 600px;
-      max-width: 95%;
-    }
-
-    .column {
-      padding: 30px;
-    }
-
-    .column#main {
-      width: 55%; /* Updated */
-      background-color: #fff;
-    }
-
-    .column#secondary {
-      width: 45%; /* Updated */
-      background-color: #F9BC35;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      color: #000;
-      border-radius: 0 2rem 2rem 0;
-      text-align: center;
-      padding: 30px;
-    }
-
-    .column#main h1,
-    .column#main h3,
-    .column#secondary h2,
-    .column#secondary h3 {
-      text-align: center;
-    }
-
-    .column#main h1 {
-      font-size: 1.4em;
-      text-transform: uppercase;
-    }
-
-    .column#main h3 {
-      font-size: 0.9em;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-
-    .form-control {
-      font-size: 0.85em;
-      margin-bottom: 12px;
-    }
-
-    .btn-primary {
+    .container {
+      position: absolute;
       width: 100%;
-      text-transform: uppercase;
-      background: linear-gradient(to right, #f1da36 0%, #fca86c 99%);
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .top, .bottom {
+      position: absolute;
+      width: 100%;
+      height: 50%;
+      left: 0;
+    }
+
+    .top { top: 0; }
+    .bottom { bottom: 0; }
+
+    .top:before, .top:after,
+    .bottom:before, .bottom:after {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 200vmax;
+      height: 200vmax;
+      top: 50%;
+      left: 50%;
+      margin-top: -100vmax;
+      transform-origin: 0 50%;
+      transition: all 0.5s ease-in-out;
+      z-index: 10;
+      opacity: 0.6;
+    }
+
+    .top:before { transform: rotate(45deg); background: #ffeb3b; }
+    .top:after { transform: rotate(135deg); background: #ffcc33; }
+    .bottom:before { transform: rotate(-45deg); background: #ffd54f; }
+    .bottom:after { transform: rotate(-135deg); background: #fbc02d; }
+
+    .center {
+      position: absolute;
+      width: 400px;
+      height: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      background: #fffde7;
+      z-index: 20;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .center h2 {
+      margin-bottom: 20px;
+    }
+
+    .center form {
+      width: 100%;
+    }
+
+    .center input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    .center button {
+      width: 100%;
+      padding: 12px;
+      background-color: #fdd835;
+      color: #333;
+      font-size: 16px;
       border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
       font-weight: bold;
-      letter-spacing: 1px;
+      transition: background-color 0.3s;
     }
 
-    .btn-primary:hover {
-      background: #e0b82e;
-    }
-
-    .sec-content {
-      padding: 10px;
-    }
-
-    .sec-content button {
-      background: rgba(255, 255, 255, 0.3);
-      color: #000;
-      border: none;
-      padding: 8px 18px;
-      font-weight: bold;
-      border-radius: 5px;
-    }
-
-    .sec-content button:hover {
-      background: rgba(255, 255, 255, 0.5);
+    .center button:hover {
+      background-color: #fbc02d;
     }
   </style>
 </head>
 <body>
-
-  <div class="register-card">
-    <div class="column" id="main">
-      <h1>REGISTER</h1>
-      <h3>Enter your Information</h3>
+  <div class="container">
+    <div class="top"></div>
+    <div class="bottom"></div>
+    <div class="center">
+      <h2>Sign Up to RentKart</h2>
       <form>
-        <div class="form-group">
-          <label for="nameInput">Name</label>
-          <input type="text" class="form-control" id="nameInput" placeholder="Name">
-        </div>
-        <div class="form-group">
-          <label for="emailInput">E-mail</label>
-          <input type="email" class="form-control" id="emailInput" placeholder="E-mail">
-        </div>
-        <div class="form-group">
-          <label for="passwordInput">Password</label>
-          <input type="password" class="form-control" id="passwordInput" placeholder="Password">
-        </div>
-        <div class="form-group">
-          <label for="mobileInput">Mobile Number</label>
-          <input type="tel" class="form-control" id="mobileInput" placeholder="Mobile Number">
-        </div>
-        <div class="form-group">
-          <label for="addressInput">Address</label>
-          <textarea class="form-control" id="addressInput" rows="2" placeholder="Your Address"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Sign Up</button>
+        <input type="text" name="name" placeholder="Name" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <input type="text" name="phone" placeholder="Phone Number" required />
+        <input type="text" name="address" placeholder="Address" required />
+        <button type="submit">Sign Up</button>
+        <p style="text-align: center; margin-top: 15px;">
+            Already have an account?
+          <a href="login.html" style="color: #f57c00; font-weight: bold; text-decoration: none;"> Login</a>
+          </p>
+
       </form>
-    </div>
-    <div class="column" id="secondary">
-      <div class="sec-content">
-        <h2>Welcome Back!</h2>
-        <h3>Already have an account? Then Login</h3>
-        <button class="btn-primary" onclick="window.location.href='login.html'">Login</button>
-      </div>
     </div>
   </div>
 
+  <!-- ✅ Link external JS file -->
+  <script src="./js/signup.js"></script>
 </body>
 </html>
 
