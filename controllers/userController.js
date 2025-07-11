@@ -140,9 +140,28 @@ export const deleteUser = async (req, res) => {
   }
 };
 export const updateUser = async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(user);
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.phone = req.body.phone || user.phone;
+    user.address = req.body.address || user.address;
+
+    const updatedUser = await user.save();
+    res.status(200).json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      address: updatedUser.address,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating user" });
+  }
 };
+
 
 export const getLoggedInUser = async (req, res) => {
   try {
