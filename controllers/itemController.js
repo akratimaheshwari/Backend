@@ -2,11 +2,25 @@ import Item from '../models/item.js';
 
 export const createItem = async (req, res) => {
   try {
-    const { title, description, pricing, condition, category, images, rental_start_date, rental_end_date, quantity } = req.body;
+    const {
+      title, description, pricing: rawPricing,
+      condition, category,
+      rental_start_date, rental_end_date,
+      quantity
+    } = req.body;
+
+    let pricing;
+    try {
+      pricing = JSON.parse(rawPricing);
+    } catch (e) {
+      return res.status(400).json({ message: 'Invalid pricing format' });
+    }
 
     if (!title || !pricing?.per_day || !description) {
       return res.status(400).json({ message: 'Title, per_day pricing and description are required' });
     }
+
+    const images = req.files?.map(file => file.path) || [];
 
     const item = await Item.create({
       owner_id: req.user._id,
@@ -15,7 +29,7 @@ export const createItem = async (req, res) => {
       pricing,
       condition,
       category,
-      image: req.file?.path ,
+      images,
       rental_start_date,
       rental_end_date,
       quantity
@@ -26,6 +40,7 @@ export const createItem = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 export const getItems = async (req, res) => {
   try {

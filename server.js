@@ -18,6 +18,7 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import returnRoutes from './routes/returnRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +47,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use("/api/categories", categoryRoutes);
 
 app.use(express.static(path.join(__dirname, 'client')));
 app.use('/api/users', userRoutes);

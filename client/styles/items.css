@@ -1,0 +1,34 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  padding: 20px;
+}
+
+.items-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin-top: 20px;
+}
+
+.item-card {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  background-color: #f9f9f9;
+}
+
+.item-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.status {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background-color: #eee;
+}
