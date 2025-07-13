@@ -1,3 +1,4 @@
+
 const grid = document.getElementById('itemsGrid');
 
 // Adjust if your backend is on port 5000
@@ -69,4 +70,6 @@ function addToCart(itemId, title) {
     alert("Failed to add to cart");
   });
 }
+
+
 
