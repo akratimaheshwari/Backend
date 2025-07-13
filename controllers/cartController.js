@@ -2,12 +2,29 @@ import User from '../models/user.js';
 
 export const getCart = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('cart.item_id');
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const user = await User.findById(req.user._id)
+      .populate('cart.item_id', 'title images pricing'); // ✅ only necessary fields
 
-    res.status(200).json(user.cart);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    const populatedCart = user.cart.map((entry) => {
+      const item = entry.item_id;
+
+      return {
+        _id: entry._id,
+        item_id: item._id,
+        title: item.title,
+        image: item.images?.[0] || "https://via.placeholder.com/300x200",
+        price: item.pricing?.per_day ?? 0,
+        rental_type: entry.rental_type,
+        rental_start_date: entry.rental_start_date,
+        rental_end_date: entry.rental_end_date,
+        quantity: entry.quantity
+      };
+    });
+
+    res.status(200).json(populatedCart);
+  } catch (error) {
+    console.error("❌ Error getting cart:", error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 

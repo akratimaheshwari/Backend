@@ -25,6 +25,17 @@ dots.forEach(dot => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  
+  searchInput.addEventListener("input", filterItems);
+
+// ✅ Trigger on button click
+// await fetchCategoriesAndItems(); // Wait till all items are loaded
+searchBtn.addEventListener("click", () => {
+  const query = searchInput.value.trim();
+  if (query) {
+    window.location.href = `items.html?q=${encodeURIComponent(query)}`;
+  }
+});
   const authLink = document.getElementById("auth-link");
   const token = localStorage.getItem("token");
 
@@ -44,6 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
     authLink.textContent = "Signup/Login";
     authLink.href = "signup.html";
   }
+  
+
 });
 const categoriesContainer = document.getElementById("categoriesContainer");
 
@@ -146,6 +159,7 @@ function filterItems() {
 searchInput.addEventListener("input", filterItems);
 
 // ✅ Trigger on button click
+// await fetchCategoriesAndItems(); // Wait till all items are loaded
 searchBtn.addEventListener("click", () => {
   const query = searchInput.value.trim();
   if (query) {

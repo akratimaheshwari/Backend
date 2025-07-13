@@ -1,44 +1,72 @@
-function getQueryParam(name) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(name);
-}
+const grid = document.getElementById('itemsGrid');
 
-const searchQuery = getQueryParam("q")?.toLowerCase() || "";
-const itemsContainer = document.getElementById("itemsContainer");
-const heading = document.getElementById("resultsHeading");
+// Adjust if your backend is on port 5000
+fetch('/api/items')
+  .then(response => response.json())
+  .then(items => {
+    console.log('Fetched items:', items);
+    items.forEach(item => {
+      const col = document.createElement('div');
+      col.className = 'col-md-4 mb-4';
 
-async function loadItems() {
-  try {
-    const res = await fetch("/api/items");
-    const items = await res.json();
+      // fallback image if none
+      const image = item.images && item.images.length > 0
+        ? item.images[0]
+        : 'https://via.placeholder.com/300x200?text=No+Image';
 
-    let filteredItems = items;
+      const price = item.pricing?.per_day ?? 0;
 
-    if (searchQuery) {
-      filteredItems = items.filter(item =>
-        item.title.toLowerCase().includes(searchQuery)
-      );
-      heading.textContent = `Results for "${searchQuery}"`;
-    }
+      col.innerHTML = `
+        <div class="card product-card">
+          <img src="${image}" class="card-img-top product-img" alt="${item.title}">
+          <div class="card-body">
+            <h5 class="card-title">${item.title}</h5>
+            <p class="card-text text-muted">${item.description}</p>
+            <p class="fw-bold">₹${price} / day</p>
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-add btn-sm" onclick='addToCart("${item._id}", "${item.title}")'>Add to Cart</button>
 
-    if (filteredItems.length === 0) {
-      itemsContainer.innerHTML = `<p>No items found.</p>`;
-      return;
-    }
+              <a href="itemdetails.html?id=${item._id}" class="btn btn-details btn-sm">View Details</a>
+            </div>
+          </div>
+        </div>
+      `;
+      grid.appendChild(col);
+    });
+  })
+  .catch(error => {
+    console.error('Error fetching items:', error);
+    grid.innerHTML = `<p class="text-danger">Failed to load items. Please try again later.</p>`;
+  });
 
-    itemsContainer.innerHTML = filteredItems.map(item => `
-      <div class="item-card">
-        <img src="${item.images[0]}" alt="${item.title}" />
-        <h3>${item.title}</h3>
-        <p>₹${item.pricing?.per_day}/day</p>
-        <span class="status ${item.status}">${item.status}</span>
-      </div>
-    `).join("");
+function addToCart(itemId, title) {
+  const token = localStorage.getItem('token');
 
-  } catch (err) {
-    itemsContainer.innerHTML = `<p>Error loading items.</p>`;
-    console.error("Error:", err);
+  if (!token) {
+    alert("Please login to add items to cart.");
+    window.location.href = 'login.html';
+    return;
   }
+
+  fetch('/api/cart/add', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ item_id: itemId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      alert(`"${title}" added to cart.`);
+    } else {
+      alert("Error: " + data.error);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Failed to add to cart");
+  });
 }
 
-loadItems();

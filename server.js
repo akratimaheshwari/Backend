@@ -37,8 +37,8 @@ app.use(cors())
 
 app.use(express.urlencoded({ extended: true }));
 console.log("✅ JWT_SECRET in server.js:",process.env.JWT_SECRET);
+app.use(express.static(path.join(__dirname, 'client')));
 
-app.use('/api/items', itemRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/auth', authRoutes);
@@ -49,8 +49,9 @@ app.use('/api/returns', returnRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use("/api/categories", categoryRoutes);
 
-app.use(express.static(path.join(__dirname, 'client')));
+
 app.use('/api/users', userRoutes);
+app.use('/api/items', itemRoutes);
 app.use('/api/cart', cartRoutes);
 
 // app.get('/', (req, res) => {

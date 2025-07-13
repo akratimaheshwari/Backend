@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (!token) {
     alert("Please log in to view your cart.");
-    window.location.href = "/signup"; // redirect if not logged in
+    window.location.href = "/signup";
     return;
   }
 
@@ -29,40 +29,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     let total = 0;
 
     for (const item of cartItems) {
-      const product = item.item_id;
-      const subtotal = product.price * item.quantity;
+      const start = new Date(item.rental_start_date);
+      const end = new Date(item.rental_end_date);
+      const timeDiff = end.getTime() - start.getTime();
+      const rentalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // ✅ total rental duration in days
+
+      const perDayRate = item.price;
+      const subtotal = perDayRate * item.quantity * rentalDays;
       total += subtotal;
 
       html += `
-        <div class="cart-item">
-          <img src="${product.image}" alt="${product.name}" />
-          <div class="cart-details">
-            <h3>${product.name}</h3>
-            <p>${product.description || ''}</p>
+        <div class="cart-item d-flex align-items-center border p-3 rounded mb-3 shadow-sm">
+          <img src="${item.image}" alt="${item.title}" class="cart-thumb me-3" />
+          <div class="flex-grow-1">
+            <h5>${item.title}</h5>
             <p><strong>Rental Type:</strong> ${item.rental_type}</p>
-            <p><strong>From:</strong> ${new Date(item.rental_start_date).toLocaleDateString()}</p>
-            <p><strong>To:</strong> ${new Date(item.rental_end_date).toLocaleDateString()}</p>
+            <p><strong>From:</strong> ${start.toLocaleDateString()} <strong>To:</strong> ${end.toLocaleDateString()}</p>
+            <p><strong>Duration:</strong> ${rentalDays} day(s)</p>
+            <p><strong>Quantity:</strong> 
+              <input type="number" value="${item.quantity}" min="1" data-id="${item._id}" style="width: 60px;" />
+            </p>
+            <p><strong>Subtotal:</strong> ₹${subtotal}</p>
+            <button class="remove-btn btn btn-sm btn-outline-danger mt-1" data-id="${item._id}">Remove</button>
           </div>
-          <div class="quantity">
-            <label>Qty:</label>
-            <input type="number" value="${item.quantity}" min="1" data-id="${item._id}">
-          </div>
-          <div class="price">Rs.${subtotal}</div>
-          <button class="remove-btn" data-id="${item._id}">Remove</button>
         </div>
       `;
     }
 
     html += `
-      <div class="cart-summary">
-        <h3>Total: Rs.${total}</h3>
-        <button class="btn-checkout">Checkout</button>
+      <div class="cart-summary mt-4 p-3 bg-light rounded shadow-sm">
+        <h4>Total: ₹${total}</h4>
+        <button class="btn btn-success mt-2">Proceed to Checkout</button>
       </div>
     `;
 
     container.innerHTML = html;
 
-    // ✅ Remove item handler
+    // ✅ Remove item from cart
     document.querySelectorAll(".remove-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-id");
@@ -76,9 +79,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
 
-    // ✅ Quantity update handler
+    // ✅ Quantity update
     document.querySelectorAll('input[type="number"]').forEach(input => {
-      input.addEventListener('change', async () => {
+      input.addEventListener("change", async () => {
         const cartItemId = input.getAttribute("data-id");
         const newQuantity = parseInt(input.value);
 
@@ -98,11 +101,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
 
           if (!res.ok) throw new Error("Failed to update quantity");
-
-          const data = await res.json();
-          console.log("Quantity updated:", data);
           location.reload();
-
         } catch (err) {
           alert("Failed to update quantity: " + err.message);
         }
