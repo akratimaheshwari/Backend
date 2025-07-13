@@ -1,44 +1,37 @@
-function getQueryParam(name) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(name);
-}
 
-const searchQuery = getQueryParam("q")?.toLowerCase() || "";
-const itemsContainer = document.getElementById("itemsContainer");
-const heading = document.getElementById("resultsHeading");
+  const grid = document.getElementById('itemsGrid');
 
-async function loadItems() {
-  try {
-    const res = await fetch("/api/items");
-    const items = await res.json();
+  // Fetch items from backend
+  fetch('https://your-backend-url.com/api/items') // Replace with your real backend endpoint
+    .then(response => response.json())
+    .then(items => {
+      items.forEach(item => {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 mb-4';
 
-    let filteredItems = items;
+        col.innerHTML = `
+          <div class="card product-card">
+            <img src="${item.image}" class="card-img-top product-img" alt="${item.title}">
+            <div class="card-body">
+              <h5 class="card-title">${item.title}</h5>
+              <p class="card-text text-muted">${item.description}</p>
+              <p class="fw-bold">₹${item.price} / day</p>
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-add btn-sm" onclick="addToCart('${item.title}')">Add to Cart</button>
+                <a href="itemdetails.html?id=${item.id}" class="btn btn-details btn-sm">View Details</a>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(col);
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching items:', error);
+      grid.innerHTML = `<p class="text-danger">Failed to load items. Please try again later.</p>`;
+    });
 
-    if (searchQuery) {
-      filteredItems = items.filter(item =>
-        item.title.toLowerCase().includes(searchQuery)
-      );
-      heading.textContent = `Results for "${searchQuery}"`;
-    }
-
-    if (filteredItems.length === 0) {
-      itemsContainer.innerHTML = `<p>No items found.</p>`;
-      return;
-    }
-
-    itemsContainer.innerHTML = filteredItems.map(item => `
-      <div class="item-card">
-        <img src="${item.images[0]}" alt="${item.title}" />
-        <h3>${item.title}</h3>
-        <p>₹${item.pricing?.per_day}/day</p>
-        <span class="status ${item.status}">${item.status}</span>
-      </div>
-    `).join("");
-
-  } catch (err) {
-    itemsContainer.innerHTML = `<p>Error loading items.</p>`;
-    console.error("Error:", err);
+  function addToCart(title) {
+    alert(`"${title}" added to cart.`);
   }
-}
 
-loadItems();
