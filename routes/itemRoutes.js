@@ -1,5 +1,5 @@
 import express from 'express';
-import { createItem, getItems,updateItem,deleteItem } from '../controllers/itemController.js';
+import { createItem, getItems,updateItem,deleteItem ,getItemsByOwner} from '../controllers/itemController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import upload from '../middleware/upload.js'; 
 import Category from "../models/category.js";
@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post('/', verifyToken, upload.array("images", 5), createItem);
 router.get('/', getItems);
+router.get("/owner", verifyToken, getItemsByOwner);
 router.put('/:id', verifyToken, updateItem);   // 🔐 Protected
 router.delete('/:id', verifyToken, deleteItem);
 router.get("/category/:slug", async (req, res) => {
@@ -39,4 +40,7 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
 export default router;

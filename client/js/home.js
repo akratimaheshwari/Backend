@@ -76,7 +76,7 @@ async function fetchCategoriesAndItems() {
       <h2 class="category-title">${category.title}</h2>
     </div>
   </a>
-  <div class="items-grid" id="items-${category.slug}">Loading...</div>
+   
 `;
 
 
@@ -84,7 +84,7 @@ async function fetchCategoriesAndItems() {
 
       categoriesContainer.appendChild(section);
 
-      loadItemsForCategory(category.slug, `items-${category.slug}`);
+      // loadItemsForCategory(category.slug, `items-${category.slug}`);
     }
   } catch (err) {
     console.error("Error loading categories:", err);

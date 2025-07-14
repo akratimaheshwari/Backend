@@ -44,9 +44,16 @@
         if (item.text === "Personal Info") {
           e.preventDefault();
           showPersonalInfo();
-        } else {
+      }   
+        else if (item.text === "My Listings") {
+          e.preventDefault();
+          loadOwnerListings();
+    } 
+        else {
           hidePersonalInfo();
-        }
+          document.getElementById("myListingsSection").style.display = "none";
+}
+
 
         if (item.text === "Log Out") {
           e.preventDefault();
@@ -206,5 +213,51 @@
     });
   });
 });
+async function loadOwnerListings() {
+  const token = localStorage.getItem("token");
+  const section = document.getElementById("myListingsSection");
+  const container = document.getElementById("listingContainer");
+
+  section.style.display = "block";
+  personalInfoSection.style.display = "none";
+  renterContent.style.display = "none";
+  ownerContent.style.display = "block";
+
+  container.innerHTML = `<p>Loading listings...</p>`;
+
+  try {
+    const res = await fetch("/api/items/owner", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch listings");
+
+    const listings = await res.json();
+
+    if (listings.length === 0) {
+      container.innerHTML = "<p>No listings found.</p>";
+      return;
+    }
+
+    container.innerHTML = listings.map(item => `
+      <div class="col-md-6">
+        <div class="card">
+          <img src="${item.images?.[0]}" class="card-img-top" alt="${item.title}" style="height: 180px; object-fit: cover;">
+          <div class="card-body">
+            <h5 class="card-title">${item.title}</h5>
+            <p class="card-text">₹${item.pricing?.per_day}/day</p>
+            <span class="badge bg-${item.status === 'available' ? 'success' : 'secondary'}">${item.status}</span>
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    container.innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
+  }
+}
+
 
 
