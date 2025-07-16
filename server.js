@@ -60,7 +60,7 @@ app.use('/api/cart', cartRoutes);
 
 
 
-const path = require("path");
+
 
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, 'rentkart-client', 'build')));
