@@ -65,7 +65,7 @@ app.use('/api/cart', cartRoutes);
 app.use(express.static(path.join(__dirname, 'rentkart-client', 'build')));
 
 // Fallback route for all other requests
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'rentkart-client', 'build', 'index.html'));
 });
 
