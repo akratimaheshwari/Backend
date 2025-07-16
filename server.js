@@ -59,15 +59,17 @@ app.use('/api/cart', cartRoutes);
 // });
 
 
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'login.html'));
+
+const path = require("path");
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, 'rentkart-client', 'build')));
+
+// Fallback route for all other requests
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'rentkart-client', 'build', 'index.html'));
 });
-app.get('/signup', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'signup.html'));
-});
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "home.html"));
-});
+
 // app.get('/api/test', (req, res) => {
 //   res.send('✅ Test route working');
 // });
