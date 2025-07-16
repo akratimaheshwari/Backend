@@ -53,4 +53,20 @@ Date: ${new Date(order.createdAt).toDateString()}
     res.status(500).send('Error fetching orders');
   }
 };
+export const getOwnerOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate({
+        path: 'item',
+        match: { owner_id: req.user._id }, // filter items owned by logged-in user
+      })
+      .populate('renter_id', 'name email phone');
+
+    const filteredOrders = orders.filter(order => order.item !== null);
+
+    res.json(filteredOrders);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch owner orders' });
+  }
+};
 

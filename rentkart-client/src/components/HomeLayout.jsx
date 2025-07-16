@@ -149,12 +149,15 @@ export const FeaturedItems = ({ items }) => (
 
 export const CategorySection = ({ categories }) => (
   <section className="py-10 px-6 max-w-6xl mx-auto grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-    {categories.map(category => (
-      <Link to={`/category/${category.slug}`} key={category._id} className="block rounded shadow hover:shadow-lg transition">
-        <img src={category.image} alt={category.title} className="w-full h-40 object-cover rounded-t" />
-        <h3 className="text-center font-semibold p-3 bg-gray-100">{category.title}</h3>
-      </Link>
-    ))}
+    {categories.map(category =>
+  category.slug ? (
+    <Link to={`/category/${category.slug}`} key={category._id} className="block rounded shadow hover:shadow-lg transition">
+      <img src={category.image} alt={category.title} className="w-full h-40 object-cover rounded-t" />
+      <h3 className="text-center font-semibold p-3 bg-gray-100">{category.title}</h3>
+    </Link>
+  ) : null
+)}
+
   </section>
 );
 

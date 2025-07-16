@@ -28,13 +28,7 @@ const app = express();
 
 // middleware
 app.use(express.json());
-// app.use(urlencoded());
 app.use(cors())
-
-// Routes
-// app.use(express.static('client'));// login
-
-
 app.use(express.urlencoded({ extended: true }));
 console.log("✅ JWT_SECRET in server.js:",process.env.JWT_SECRET);
 
@@ -53,29 +47,36 @@ app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/cart', cartRoutes);
 
-// app.get('/', (req, res) => {
-//   res.status(200).send('Welcome to Rentkart Backend API');
+//react connection
+
+// app.use(express.static(path.join(__dirname, 'rentkart-client', 'build')));
+// app.get('/*', function (req, res) {
+//   res.sendFile(path.resolve(__dirname, 'rentkart-client', 'build', 'index.html'));
 // });
 
+// Serve frontend only if build exists
+import fs from 'fs';
+const frontendIndexPath = path.resolve(__dirname, 'rentkart-client', 'build', 'index.html');
+const frontendBuildPath = path.resolve(__dirname, 'rentkart-client', 'build');
+
+// Serve static files
+if (fs.existsSync(frontendIndexPath)) {
+  app.use(express.static(frontendBuildPath));
+
+  // ✅ Safe catch-all for frontend in Express 5
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/admin')) {
+      res.sendFile(frontendIndexPath);
+    } else {
+      next();
+    }
+  });
+}
 
 
-
-
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, 'rentkart-client', 'build')));
-
-// Fallback route for all other requests
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'rentkart-client', 'build', 'index.html'));
-});
-
-// app.get('/api/test', (req, res) => {
-//   res.send('✅ Test route working');
+// app.use((req, res) => {
+//   res.status(404).send('Page Not Found' );
 // });
-
-app.use((req, res) => {
-  res.status(404).send('Page Not Found' );
-});
 
 
 const startServer = async () => {

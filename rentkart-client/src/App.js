@@ -4,6 +4,9 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Home from './pages/Home';
 import UserDashboard from './pages/UserDashboard';
+import Orders from "./pages/Orders";
+import OwnerOrders from "./pages/OwnerOrders";
+
 
 function App() {
   return (
@@ -13,6 +16,8 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<UserDashboard />} /> 
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/owner-orders" element={<OwnerOrders />} />
       </Routes>
     </Router>
   );
