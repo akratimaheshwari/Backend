@@ -11,6 +11,15 @@ const router = express.Router();
 router.post('/', verifyToken, upload.array("images", 5), createItem);
 router.get('/', getItems);
 router.get("/owner", verifyToken, getItemsByOwner);
+router.get('/featured', async (req, res) => {
+  try {
+    const items = await Item.find().limit(4); // Or add .sort() or filters if needed
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch featured items' });
+  }
+});
+
 router.put('/:id', verifyToken, updateItem);   // 🔐 Protected
 router.delete('/:id', verifyToken, deleteItem);
 router.get("/category/:slug", async (req, res) => {
@@ -41,6 +50,14 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.get('/featured', async (req, res) => {
+  try {
+    const items = await Item.find().limit(4); // Or add .sort() or filters if needed
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch featured items' });
+  }
+});
 
 
 export default router;
