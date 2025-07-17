@@ -6,7 +6,10 @@ import Home from './pages/Home';
 import UserDashboard from './pages/UserDashboard';
 import Orders from "./pages/Orders";
 import OwnerOrders from "./pages/OwnerOrders";
-
+import Items from "./pages/Items";
+import CategoryItems from './pages/CategoryItems';
+import ItemsDetails from "./pages/ItemsDetails";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -18,6 +21,10 @@ function App() {
         <Route path="/dashboard" element={<UserDashboard />} /> 
         <Route path="/orders" element={<Orders />} />
         <Route path="/owner-orders" element={<OwnerOrders />} />
+        <Route path="/items" element={<Items />} />
+        <Route path="/category/:slug" element={<CategoryItems />} />
+        <Route path="/items/:id" element={<ItemsDetails />} />
+         <Route path="/cart" element={<Cart />} />
       </Routes>
     </Router>
   );

@@ -7,7 +7,7 @@ const OwnerOrders = () => {
     const fetchOwnerOrders = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/orders/owner", {
+        const res = await fetch("api/orders/owner", {
           headers: { Authorization: `Bearer ${token}` },
         });
 

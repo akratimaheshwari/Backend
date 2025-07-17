@@ -60,4 +60,20 @@ router.get('/featured', async (req, res) => {
 });
 
 
+// GET /api/items/category/:slug
+router.get('/category/:slug', async (req, res) => {
+  const { slug } = req.params;
+  try {
+    const category = await Category.findOne({ slug });
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    const items = await Item.find({ category: category.name }); // or category._id if referenced by id
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+
 export default router;

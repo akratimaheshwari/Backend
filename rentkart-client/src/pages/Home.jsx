@@ -1,4 +1,3 @@
-// pages/Home.jsx
 import React, { useEffect, useState } from 'react';
 import {
   Header,
@@ -8,8 +7,6 @@ import {
   HowItWorks,
   Footer
 } from '../components/HomeLayout';
-
-
 
 const Home = () => {
   const [featuredItems, setFeaturedItems] = useState([]);
@@ -33,11 +30,10 @@ const Home = () => {
       <HeroCarousel />
       <FeaturedItems items={featuredItems} />
       <CategorySection categories={categories} />
-       <HowItWorks />
+      <HowItWorks />
       <Footer />
     </>
   );
 };
 
 export default Home;
-
