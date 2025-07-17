@@ -33,7 +33,7 @@ const ItemDetails = () => {
     const fetchItem = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:5000/api/items/${id}`);
+        const res = await fetch(`/api/items/${id}`);
         const data = await res.json();
         setItem(data);
       } catch (err) {
@@ -49,7 +49,7 @@ const ItemDetails = () => {
   const handleAddToCart = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/cart/add', {
+      const res = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
