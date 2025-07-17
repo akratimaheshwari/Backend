@@ -24,7 +24,7 @@ const ItemPage = () => {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/items');
+      const res = await fetch('/api/items');
       const data = await res.json();
       setItems(data);
     } catch (err) {
@@ -40,7 +40,7 @@ const ItemPage = () => {
 
   const handleLike = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/items/${id}/like`, {
+      await fetch(`/api/items/${id}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ const ItemPage = () => {
   const handleAddToCart = async (item) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/cart/add', {
+      const res = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
