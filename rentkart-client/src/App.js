@@ -10,6 +10,8 @@ import Items from "./pages/Items";
 import CategoryItems from './pages/CategoryItems';
 import ItemsDetails from "./pages/ItemsDetails";
 import Cart from "./pages/Cart";
+import MyListing from "./pages/MyListing";
+import AddItems from "./pages/AddItems";
 
 function App() {
   return (
@@ -24,7 +26,9 @@ function App() {
         <Route path="/items" element={<Items />} />
         <Route path="/category/:slug" element={<CategoryItems />} />
         <Route path="/items/:id" element={<ItemsDetails />} />
-         <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/my-listings" element={<MyListing />} />
+        <Route path="/add-item" element={<AddItems />} />
       </Routes>
     </Router>
   );

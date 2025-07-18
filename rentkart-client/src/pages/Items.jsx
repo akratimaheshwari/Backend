@@ -14,25 +14,30 @@ const ItemPage = () => {
 
   const categories = [
     { id: 'all', name: 'All Items', count: 0 },
-    { id: 'electronics', name: 'Electronics', count: 0 },
+    { id: 'appliances', name: 'Appliances', count: 0 },
     { id: 'furniture', name: 'Furniture', count: 0 },
     { id: 'vehicles', name: 'Vehicles', count: 0 },
     { id: 'tools', name: 'Tools & Equipment', count: 0 },
     { id: 'sports', name: 'Sports & Recreation', count: 0 },
   ];
 
-  const fetchItems = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/items');
-      const data = await res.json();
-      setItems(data);
-    } catch (err) {
-      console.error("Failed to fetch items:", err);
-    } finally {
-      setLoading(false);
+ const fetchItems = async (slug = '') => {
+  try {
+    setLoading(true);
+    let url = '/api/items';
+    if (slug && slug !== 'all') {
+      url = `/api/items/category/${slug}`;
     }
-  };
+    const res = await fetch(url);
+    const data = await res.json();
+    setItems(data);
+  } catch (err) {
+    console.error("Failed to fetch items:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchItems();
@@ -78,14 +83,20 @@ const ItemPage = () => {
   };
 
   const filteredAndSortedItems = items
-    .filter(item => {
-      const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase()) ||
-                           item.description?.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
-      const matchesPrice = (item.pricing?.per_day || item.price) >= priceRange[0] && 
-                          (item.pricing?.per_day || item.price) <= priceRange[1];
-      return matchesSearch && matchesCategory && matchesPrice;
-    })
+  .filter(item => {
+    const matchesSearch =
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      item.description?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesCategory =
+      filterCategory === 'all' || item.category?.slug === filterCategory;
+
+    const price = item.pricing?.per_day || item.price || 0;
+    const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
+
+    return matchesSearch && matchesCategory && matchesPrice;
+  })
+  
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':

@@ -83,7 +83,7 @@ const UserDashboard = () => {
                 <Package className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-gray-800">
-                RentHub
+                RentKart
               </h1>
             </div>
 

@@ -85,11 +85,13 @@ export const deleteItem = async (req, res) => {
   }
 };
 // controllers/itemController.js
+
 export const getItemsByOwner = async (req, res) => {
   try {
-    const items = await Item.find({ owner_id: req.user._id });
-    res.json(items);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch owner items" });
+    const ownerId = req.user.id || req.user._id;
+    const items = await Item.find({ owner_id: ownerId });
+    res.status(200).json({ items });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch items' });
   }
 };
