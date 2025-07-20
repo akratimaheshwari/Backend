@@ -72,36 +72,45 @@ export const getOwnerOrders = async (req, res) => {
 
 
 
+import Item from '../models/item.js';
+
 export const checkout = async (req, res) => {
   try {
     const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
 
-
+     console.log('🛒 Checkout request body:', req.body);
+    console.log('👤 Renter ID:', req.user.id);
+    
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'No items provided' });
     }
-    // check for self order
-    for (const item of items) {
-      const dbItem = await Item.findById(item.item_id);
-      if (!dbItem) {
-        return res.status(404).json({ message: 'Item not found' });
-      }
 
-      if (dbItem.owner_id.toString() === userId) {
-        return res.status(403).json({ message: 'You cannot rent your own item' });
-      }
-    }
+    // ✅ Fetch item details from DB to check ownership
+    // const itemIds = items.map(i => i.item_id);
+    // const dbItems = await Item.find({ _id: { $in: itemIds } });
+
+    // const selfOwnedItem = dbItems.find(item => {
+    //   const ownerId = item.owner_id?.toString();
+    //   return ownerId === req.user.id;
+    // });
+
+    // if (selfOwnedItem) {
+    //   return res.status(400).json({
+    //     message: `❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from cart.`
+    //   });
+    // }
+
     const newOrder = new Order({
       renter_id: req.user.id,
       items,
       totalAmount,
-      shippingAddress, // Embedded address snapshot
-     paymentMethod: paymentMethod || 'COD',
+      shippingAddress,
+      paymentMethod: paymentMethod || 'COD',
       status: 'pending'
     });
 
     await newOrder.save();
-    // await Cart.deleteMany({ user_id: req.user.id });
+
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {
     console.error('Order creation failed:', err);

@@ -11,6 +11,7 @@ import {
 const Home = () => {
   const [featuredItems, setFeaturedItems] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [location, setLocation] = useState("");
 
   useEffect(() => {
     fetch('/api/items/featured')
@@ -26,9 +27,9 @@ const Home = () => {
 
   return (
     <>
-      <Header />
+      <Header location={location} setLocation={setLocation} />
       <HeroCarousel />
-      <FeaturedItems items={featuredItems} />
+      <FeaturedItems items={featuredItems} location={location} />
       <CategorySection categories={categories} />
       <HowItWorks />
       <Footer />
@@ -37,3 +38,4 @@ const Home = () => {
 };
 
 export default Home;
+

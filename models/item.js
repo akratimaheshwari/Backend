@@ -29,7 +29,12 @@ const itemSchema = new mongoose.Schema({
   deposit: {
   type: Number,
   default: 0
+},
+location: {
+  type: String,
+  required: true
 }
+
 
 
 }, { timestamps: true });

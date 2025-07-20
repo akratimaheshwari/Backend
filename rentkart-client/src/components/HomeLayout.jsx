@@ -28,7 +28,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-export const Header = () => {
+export const Header = ({ location, setLocation }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
 
@@ -41,108 +41,74 @@ export const Header = () => {
             <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
               <Package className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              RentKart
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800">RentKart</h1>
           </div>
 
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex items-center flex-1 max-w-lg mx-8">
+          {/* Search Bar and Location */}
+          <div className="hidden md:flex items-center flex-1 max-w-xl mx-8 space-x-4">
             <div className="relative w-full">
               <input
                 type="text"
-                id="searchInput"
                 placeholder="Search for items, categories..."
-                className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all"
+                className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl"
               />
-              <button 
-                id="searchBtn" 
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-lg hover:bg-gray-700 transition-all"
-              >
+              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-lg">
                 <Search className="w-4 h-4" />
               </button>
             </div>
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-5 h-5 text-gray-500" />
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Location"
+                className="pl-2 pr-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 w-40"
+              />
+            </div>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/home" className="text-gray-600 hover:text-gray-800 font-medium transition-colors">
-              Home
-            </Link>
-            <Link to="/items" className="text-gray-600 hover:text-gray-800 font-medium transition-colors">
-              Browse Items
-            </Link>
-            <Link to="/cart" className="relative text-gray-600 hover:text-gray-800 transition-colors">
+            <Link to="/home" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
+            <Link to="/items" className="text-gray-600 hover:text-gray-800 font-medium">Browse Items</Link>
+            <Link to="/cart" className="relative text-gray-600 hover:text-gray-800">
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                0
-              </span>
+              <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
             </Link>
-            <Link to="/orders" className="text-gray-600 hover:text-gray-800 transition-colors">
-              <ClipboardList className="w-5 h-5" />
-            </Link>
-
+            <Link to="/orders" className="text-gray-600 hover:text-gray-800"><ClipboardList className="w-5 h-5" /></Link>
             {isLoggedIn ? (
-              <Link 
-                to="/dashboard" 
-                className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all flex items-center space-x-2"
-              >
-                <UserCircle className="w-4 h-4" />
-                <span>Dashboard</span>
+              <Link to="/dashboard" className="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <UserCircle className="w-4 h-4" /><span>Dashboard</span>
               </Link>
             ) : (
-              <Link 
-                to="/signup" 
-                className="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-all font-medium"
-              >
-                Join Now
-              </Link>
+              <Link to="/signup" className="bg-gray-800 text-white px-6 py-2 rounded-lg font-medium">Join Now</Link>
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
-          >
+          {/* Mobile Toggle */}
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-gray-600">
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
-        {/* Mobile Search */}
-        <div className="md:hidden pb-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search for items..."
-              className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-            />
-            <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-lg">
-              <Search className="w-4 h-4" />
-            </button>
-          </div>
+        {/* Mobile Location */}
+        <div className="md:hidden mt-2 flex items-center space-x-2 px-1 pb-2">
+          <MapPin className="w-5 h-5 text-gray-500" />
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Location"
+            className="pl-2 pr-3 py-2 border border-gray-300 rounded-xl text-sm w-full"
+          />
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="flex flex-col space-y-4">
-              <Link to="/" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
-              <Link to="/items" className="text-gray-600 hover:text-gray-800 font-medium">Browse Items</Link>
-              <Link to="/cart" className="text-gray-600 hover:text-gray-800 font-medium">Cart</Link>
-              <Link to="/orders" className="text-gray-600 hover:text-gray-800 font-medium">Orders</Link>
-              {isLoggedIn ? (
-                <Link to="/dashboard" className="text-gray-800 font-medium">Dashboard</Link>
-              ) : (
-                <Link to="/signup" className="text-gray-800 font-medium">Join Now</Link>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );
 };
+
+
 
 export const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -266,86 +232,97 @@ export const HeroCarousel = () => {
   );
 };
 
-export const FeaturedItems = ({ items }) => (
-  <section className="py-16 bg-gray-100">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Featured Items
-        </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Discover our most popular rental items, carefully selected for quality and value
-        </p>
-      </div>
-      
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {items.map(item => (
-          <div key={item._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
-            <div className="relative overflow-hidden">
-              <img 
-                src={item.images[0]} 
-                alt={item.title} 
-                className="h-48 w-full object-cover group-hover:scale-110 transition-transform duration-300" 
-              />
-              <div className="absolute top-4 right-4">
-                <button className="bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all">
-                  <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+export const FeaturedItems = ({ items, location }) => {
+  const filteredItems = location
+    ? items.filter(item =>
+        item.location?.toLowerCase().includes(location.toLowerCase())
+      )
+    : items;
+
+  return (
+    <section className="py-16 bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Featured Items
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Discover our most popular rental items, carefully selected for quality and value
+          </p>
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredItems.map(item => (
+            <div key={item._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
+              <div className="relative overflow-hidden">
+                <img 
+                  src={item.images[0]} 
+                  alt={item.title} 
+                  className="h-48 w-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                />
+                <div className="absolute top-4 right-4">
+                  <button className="bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all">
+                    <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+                  </button>
+                </div>
+                <div className="absolute bottom-4 left-4">
+                  <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    Available
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                  {item.title}
+                </h4>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                  {item.description}
+                </p>
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    <span className="text-sm font-medium text-gray-700">4.8</span>
+                    <span className="text-sm text-gray-500">(24)</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    <span>{item.location || 'N/A'}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-2xl font-bold text-gray-900">
+                    ₹{item.pricing.per_day}
+                    <span className="text-sm font-normal text-gray-500">/day</span>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    ₹{item.pricing.per_week || item.pricing.per_day * 7}/week
+                  </div>
+                </div>
+                
+                <button className="w-full bg-gray-800 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transform hover:scale-105 transition-all duration-200">
+                  Rent Now
                 </button>
               </div>
-              <div className="absolute bottom-4 left-4">
-                <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Available
-                </span>
-              </div>
             </div>
-            
-            <div className="p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                {item.title}
-              </h4>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                {item.description}
-              </p>
-              
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-medium text-gray-700">4.8</span>
-                  <span className="text-sm text-gray-500">(24)</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  <span>2.5 km</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-2xl font-bold text-gray-900">
-                  ₹{item.pricing.per_day}
-                  <span className="text-sm font-normal text-gray-500">/day</span>
-                </div>
-                <div className="text-sm text-gray-500">
-                  ₹{item.pricing.per_week || item.pricing.per_day * 7}/week
-                </div>
-              </div>
-              
-              <button className="w-full bg-gray-800 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transform hover:scale-105 transition-all duration-200">
-                Rent Now
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {items.length === 0 && (
-        <div className="text-center py-12">
-          <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No featured items available at the moment</p>
+          ))}
         </div>
-      )}
-    </div>
-  </section>
-);
+
+        {filteredItems.length === 0 && (
+          <div className="text-center py-12">
+            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg">
+              No featured items available {location && `for "${location}"`}
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
 
 export const CategorySection = ({ categories }) => (
   <section className="py-16 bg-white">

@@ -150,12 +150,12 @@ const fetchSavedAddresses = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
 
     // ✅ Prevent self-rental
-    const selfOwnedItem = cartItems.find(item => item.owner_id === user._id);
-    if (selfOwnedItem) {
-      alert(`❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from cart.`);
-      setProcessing(false);
-      return;
-    }
+    // const selfOwnedItem = cartItems.find(item => item.owner_id === user._id);
+    // if (selfOwnedItem) {
+    //   alert(`❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from cart.`);
+    //   setProcessing(false);
+    //   return;
+    // }
     const orderData = {
       items: cartItems.map(item => ({
         item_id: item._id,
@@ -166,7 +166,8 @@ const fetchSavedAddresses = async () => {
       })),
       shippingAddress: selectedAddress,
       totalAmount: calculateTotal(),
-       paymentMethod 
+       paymentMethod: paymentMethod.toUpperCase()
+
     };
 
     const res = await fetch('/api/orders/checkout', {

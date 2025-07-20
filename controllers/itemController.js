@@ -69,12 +69,20 @@ export const createItem = async (req, res) => {
 
 export const getItems = async (req, res) => {
   try {
-    const items = await Item.find().populate('owner_id', 'name email');
+    const { location } = req.query;
+    const query = {};
+
+    if (location) {
+      query.location = location;
+    }
+
+    const items = await Item.find(query).populate('owner_id', 'name email');
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching items' });
   }
 };
+
 
 export const updateItem = async (req, res) => {
   try {

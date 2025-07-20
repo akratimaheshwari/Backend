@@ -20,35 +20,11 @@ router.get('/owner', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/featured', async (req, res) => {
-  try {
-    const items = await Item.find().limit(4); // Or add .sort() or filters if needed
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch featured items' });
-  }
-});
+
 
 router.put('/:id', verifyToken, updateItem);   // 🔐 Protected
 router.delete('/:id', verifyToken, deleteItem);
-router.get("/category/:slug", async (req, res) => {
-  try {
-    const slug = req.params.slug;
 
-    // Step 1: Find category by slug
-    const category = await Category.findOne({ slug });
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
-    // Step 2: Find items with that category _id
-    const items = await Item.find({ category: category._id }).populate("category", "title slug");
-
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 router.get('/:id', async (req, res) => {
   try {
     const item = await Item.findById(req.params.id)
@@ -63,10 +39,14 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
+// GET /api/items/featured?location=Delhi
+// 🔥 Featured items with optional location
 router.get('/featured', async (req, res) => {
   try {
-    const items = await Item.find().limit(4); // Or add .sort() or filters if needed
+    const { location } = req.query;
+    const filter = location ? { location: { $regex: location, $options: 'i' } } : {};
+
+    const items = await Item.find(filter).limit(4);
     res.json(items);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch featured items' });
@@ -76,15 +56,18 @@ router.get('/featured', async (req, res) => {
 
 // GET /api/items/category/:slug
 router.get('/category/:slug', async (req, res) => {
-  const { slug } = req.params;
   try {
-    const category = await Category.findOne({ slug });
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+    const slug = req.params.slug;
 
-    const items = await Item.find({ category: category.name }); // or category._id if referenced by id
+    const category = await Category.findOne({ slug });
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const items = await Item.find({ category: category._id }).populate("category", "title slug");
     res.json(items);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
