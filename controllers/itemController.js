@@ -3,26 +3,39 @@ import Item from '../models/item.js';
 export const createItem = async (req, res) => {
   try {
     const {
-      title, description, pricing: rawPricing,
-      condition, category,
-      rental_start_date, rental_end_date,
+      title,
+      description,
+      pricing,
+      condition,
+      category,
+      deposit,
+      location,
+      availability,
+      contactInfo,
+      images,
+      rental_start_date,
+      rental_end_date,
       quantity
     } = req.body;
 
-    let pricing;
-    try {
-      pricing = JSON.parse(rawPricing);
-    } catch (e) {
-      return res.status(400).json({ message: 'Invalid pricing format' });
+    // ✅ Required fields validation (deposit is optional)
+    if (
+      !title ||
+      !description ||
+      !pricing?.per_day ||
+      !category ||
+      !condition ||
+      !location ||
+      !availability?.startDate ||
+      !availability?.endDate ||
+      !contactInfo?.phone ||
+      !contactInfo?.email ||
+      !images?.length
+    ) {
+      return res.status(400).json({ message: 'All required fields must be filled (deposit is optional).' });
     }
 
-    if (!title || !pricing?.per_day || !description) {
-      return res.status(400).json({ message: 'Title, per_day pricing and description are required' });
-    }
-
-    const images = req.files?.map(file => file.path) || [];
-
-    const item = await Item.create({
+    const itemData = {
       owner_id: req.user._id,
       title,
       description,
@@ -30,16 +43,28 @@ export const createItem = async (req, res) => {
       condition,
       category,
       images,
+      location,
+      availability,
+      contactInfo,
       rental_start_date,
       rental_end_date,
       quantity
-    });
+    };
 
+    // ✅ Only add deposit if present and valid
+    if (deposit !== undefined && !isNaN(deposit)) {
+      itemData.deposit = Number(deposit);
+    }
+
+    const item = await Item.create(itemData);
     res.status(201).json(item);
   } catch (err) {
+    console.error("❌ Error creating item:", err.message);
     res.status(400).json({ error: err.message });
   }
 };
+
+
 
 
 export const getItems = async (req, res) => {
@@ -93,5 +118,15 @@ export const getItemsByOwner = async (req, res) => {
     res.status(200).json({ items });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch items' });
+  }
+};
+
+// In your item controller (e.g. itemController.js)
+const getItemById = async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id).populate('owner', 'name email'); // populate only necessary fields
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch item' });
   }
 };

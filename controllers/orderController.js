@@ -1,58 +1,58 @@
 import Order from '../models/order.js';
 import jwt from 'jsonwebtoken';
+import User from '../models/user.js';
+
 export const createOrder = async (req, res) => {
   try {
-    const { item_id, delivery_date, delivery_slot } = req.body;
-
-    const order = await Order.create({
-      renter_id: req.user.id, //  comes from token
+    const {
       item_id,
-      delivery_date,
-      delivery_slot
+      quantity,
+      rentalPeriod,
+      startDate,
+      endDate,
+      totalAmount
+    } = req.body;
+
+    const newOrder = new Order({
+      renter_id: req.user.id,
+      item_id,
+      quantity,
+      rentalPeriod,
+      startDate,
+      endDate,
+      totalAmount
     });
 
-    res.status(201).json(order);
+    await newOrder.save();
+    res.status(201).json({ message: 'Booking confirmed', order: newOrder });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
-  console.log("User making order:", req.user);
-
 };
 
 export const getOrders = async (req, res) => {
   try {
     const orders = await Order.find({ renter_id: req.user.id })
       .populate('renter_id', 'name email phone')
-      .populate('item_id', 'title description pricing rental_start_date rental_end_date quantity');
+      .populate('items.item_id', 'title description pricing images');
 
-    const text = orders.map(order => {
-      const startDate = order.item_id?.rental_start_date
-        ? new Date(order.item_id.rental_start_date).toDateString()
-        : 'N/A';
-      const endDate = order.item_id?.rental_end_date
-        ? new Date(order.item_id.rental_end_date).toDateString()
-        : 'N/A';
+    const cleanedOrders = orders.map(order => {
+      const filteredItems = order.items.filter(i => i.item_id !== null);
+      return {
+        ...order._doc,
+        items: filteredItems
+      };
+    });
 
-      return `
-Order ID: ${order._id}
-User: ${order.renter_id?.name || 'N/A'} | ${order.renter_id?.email || 'N/A'} | ${order.renter_id?.phone || 'N/A'}
-Item: ${order.item_id?.title || 'N/A'} - ${order.item_id?.description || 'N/A'}
-Pricing: ₹${order.item_id?.pricing?.per_day || 0}/day, ₹${order.item_id?.pricing?.per_week || 0}/week, ₹${order.item_id?.pricing?.per_month || 0}/month
-
-Rental Period: ${startDate} to ${endDate}
-Quantity: ${order.item_id?.quantity || 1}
-Status: ${order.status}
-Date: ${new Date(order.createdAt).toDateString()}
----------------------------`;
-    }).join('\n');
-
-    res.set('Content-Type', 'text/plain');
-    res.send(text);
+    res.status(200).json(cleanedOrders);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Error fetching orders');
+    console.error('Failed to get orders:', err);
+    res.status(500).json({ error: 'Failed to get orders' });
   }
 };
+
+
+
 export const getOwnerOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -67,6 +67,45 @@ export const getOwnerOrders = async (req, res) => {
     res.json(filteredOrders);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch owner orders' });
+  }
+};
+
+
+
+export const checkout = async (req, res) => {
+  try {
+    const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
+
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'No items provided' });
+    }
+    // check for self order
+    for (const item of items) {
+      const dbItem = await Item.findById(item.item_id);
+      if (!dbItem) {
+        return res.status(404).json({ message: 'Item not found' });
+      }
+
+      if (dbItem.owner_id.toString() === userId) {
+        return res.status(403).json({ message: 'You cannot rent your own item' });
+      }
+    }
+    const newOrder = new Order({
+      renter_id: req.user.id,
+      items,
+      totalAmount,
+      shippingAddress, // Embedded address snapshot
+     paymentMethod: paymentMethod || 'COD',
+      status: 'pending'
+    });
+
+    await newOrder.save();
+    // await Cart.deleteMany({ user_id: req.user.id });
+    res.status(201).json({ success: true, order: newOrder });
+  } catch (err) {
+    console.error('Order creation failed:', err);
+    res.status(500).json({ error: err.message });
   }
 };
 

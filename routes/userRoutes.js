@@ -5,7 +5,8 @@ import { createUser,
     loginUserAndRedirect,
     updateUser,
     deleteUser,
-    getLoggedInUser}
+    getLoggedInUser,
+clearUserCart}
     // getAllUsers } 
     from '../controllers/userController.js';
 
@@ -16,7 +17,7 @@ const router = express.Router();
 router.post('/', createUser);                        // Signup API
 router.post('/form', createUserAndRedirect);         // Signup via HTML form
 router.post('/login', loginUserAndRedirect);         // Login via form
-
+router.delete('/cart/clear', verifyToken, clearUserCart);
 // Protected routes
 // router.get('/admin/users', verifyToken, verifyAdmin, getUsers); // ✅ Admin only 
 router.put('/:id', verifyToken, updateUser);         // Update user (auth required)

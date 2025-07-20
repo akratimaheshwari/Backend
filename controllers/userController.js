@@ -161,6 +161,20 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: "Error updating user" });
   }
 };
+export const clearUserCart = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.cart = []; // Clear the cart array
+    await user.save();
+
+    res.status(200).json({ message: 'Cart cleared successfully' });
+  } catch (err) {
+    console.error('Failed to clear cart:', err);
+    res.status(500).json({ message: 'Failed to clear cart' });
+  }
+};
 
 
 export const getLoggedInUser = async (req, res) => {

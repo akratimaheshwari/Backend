@@ -47,27 +47,33 @@ const ItemDetails = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          itemId: item._id,
-          quantity: quantity
-        })
-      });
-      
-      if (res.ok) {
-        alert('Item added to cart successfully!');
-      }
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
+  try {
+    const token = localStorage.getItem('token');
+const res = await fetch('/api/cart/add', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    item_id: item._id,                         // ✅ CORRECT key
+    quantity: quantity,
+    rental_type: `per_${selectedPeriod}`,      // ✅ per_day / per_week / per_month
+    rental_start_date: startDate,
+    rental_end_date: endDate
+  })
+});
+
+
+    if (res.ok) {
+      alert('Item added to cart successfully!');
+    } else {
+      alert('Failed to add to cart');
     }
-  };
+  } catch (err) {
+    console.error("Failed to add to cart:", err);
+  }
+};
 
   const calculatePrice = () => {
     const basePrice = item?.pricing?.[`per_${selectedPeriod}`] || item?.price || 0;
@@ -391,20 +397,41 @@ const ItemDetails = () => {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setShowBookingModal(false)}
-                className="flex-1 px-4 py-3 border border-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowBookingModal(false);
-                  alert('Booking confirmed! You will receive a confirmation email shortly.');
-                }}
-                className="flex-1 px-4 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium"
-              >
-                Confirm Booking
-              </button>
+  onClick={async () => {
+    try {
+      
+      const token = localStorage.getItem('token');
+const res = await fetch('/api/cart/add', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    item_id: item._id,                         // ✅ CORRECT key
+    quantity: quantity,
+    rental_type: `per_${selectedPeriod}`,      // ✅ per_day / per_week / per_month
+    rental_start_date: startDate,
+    rental_end_date: endDate
+  })
+});
+
+
+      if (res.ok) {
+        window.location.href = '/cart';
+      } else {
+        alert("Failed to add to cart");
+      }
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    }
+  }}
+  className="flex-1 px-4 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium"
+>
+  Confirm Booking
+</button>
+
+
             </div>
           </div>
         </div>

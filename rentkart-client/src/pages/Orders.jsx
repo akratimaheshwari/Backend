@@ -1,465 +1,617 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Package, 
-  Filter, 
-  Search, 
-  Download, 
-  Calendar,
-  TrendingUp,
-  Users,
-  DollarSign,
-  Clock,
-  CheckCircle,
-  XCircle,
-  RotateCcw,
-  AlertTriangle
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Package, Truck, CheckCircle, Clock, X, Search, Eye,
+  Calendar, MapPin, Phone, Mail, AlertCircle, Star,
+  Download, MessageCircle, RotateCcw, ChevronRight
 } from 'lucide-react';
-import OrderCard from '../components/OrderCard';
+import { useNavigate } from 'react-router-dom';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState('renter'); // 'renter' or 'owner'
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState('all');
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    approved: 0,
-    delivered: 0,
-    returned: 0,
-    totalRevenue: 0
-  });
-
-  const statusTabs = [
-    { id: 'all', label: 'All Orders', icon: Package },
-    { id: 'Pending', label: 'Pending', icon: Clock },
-    { id: 'Approved', label: 'Approved', icon: CheckCircle },
-    { id: 'Delivered', label: 'Delivered', icon: Package },
-    { id: 'Return Requested', label: 'Returns', icon: RotateCcw },
-    { id: 'Cancelled', label: 'Cancelled', icon: XCircle }
-  ];
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [trackingOrder, setTrackingOrder] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Determine user role from localStorage or API
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    setUserRole(user.role || 'renter');
     fetchOrders();
   }, []);
 
   useEffect(() => {
-    filterOrders();
-  }, [orders, activeTab, searchTerm, dateFilter]);
+    filterAndSortOrders();
+  }, [orders, filterStatus, searchQuery, sortBy]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const endpoint = userRole === 'owner' ? '/api/orders/owner' : '/api/orders';
-      
-      const res = await fetch(endpoint, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch('/api/orders', {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-
       const data = await res.json();
-      setOrders(Array.isArray(data) ? data : []);
-      calculateStats(data);
+      if (!res.ok) throw new Error(data.message || 'Failed to load orders');
+
+      // Normalize and map structure
+      const formatted = data.map(order => ({
+  id: order._id,
+  createdAt: order.createdAt,
+  total: order.totalAmount,
+  status: order.status,
+  paymentMethod: order.paymentMethod || 'COD',
+  items: order.items.map(item => ({
+    _id: item.item_id._id,
+    title: item.item_id.title,
+    description: item.item_id.description,
+    images: item.item_id.images || [],
+    pricing: item.item_id.pricing || {},
+    quantity: item.quantity,
+    rental_start_date: item.rental_start_date,
+    rental_end_date: item.rental_end_date,
+  })),
+}));
+
+
+      setOrders(formatted);
     } catch (err) {
-      console.error('Fetch error:', err);
-      setOrders([]);
+      console.error('❌ Failed to fetch orders:', err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (ordersData) => {
-    const stats = {
-      total: ordersData.length,
-      pending: ordersData.filter(o => o.status === 'Pending').length,
-      approved: ordersData.filter(o => o.status === 'Approved').length,
-      delivered: ordersData.filter(o => o.status === 'Delivered').length,
-      returned: ordersData.filter(o => o.status === 'Returned').length,
-      totalRevenue: ordersData.reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+  const orderStats = useMemo(() => {
+    const now = new Date();
+    const activeRentals = orders.filter(order => {
+      return order.items.some(item => {
+        const startDate = new Date(item.rental_start_date);
+        const endDate = new Date(item.rental_end_date);
+        return startDate <= now && endDate >= now && order.status === 'delivered';
+      });
+    });
+
+    const upcomingRentals = orders.filter(order => {
+      return order.items.some(item => {
+        const startDate = new Date(item.rental_start_date);
+        return startDate > now && (order.status === 'confirmed' || order.status === 'shipped');
+      });
+    });
+
+    return {
+      total: orders.length,
+      active: activeRentals.length,
+      upcoming: upcomingRentals.length,
+      completed: orders.filter(o => o.status === 'returned').length,
     };
-    setStats(stats);
-  };
+  }, [orders]);
 
-  const filterOrders = () => {
+  const filterAndSortOrders = () => {
     let filtered = [...orders];
-
-    // Filter by status
-    if (activeTab !== 'all') {
-      filtered = filtered.filter(order => order.status === activeTab);
+    
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(order => order.status === filterStatus);
     }
 
-    // Filter by search term
-    if (searchTerm) {
+    if (searchQuery) {
       filtered = filtered.filter(order =>
-        order.item?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.item?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order._id?.toLowerCase().includes(searchTerm.toLowerCase())
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.items.some(item =>
+          item.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
       );
     }
 
-    // Filter by date
-    if (dateFilter !== 'all') {
-      const now = new Date();
-      const filterDate = new Date();
-      
-      switch (dateFilter) {
-        case 'today':
-          filterDate.setHours(0, 0, 0, 0);
-          break;
-        case 'week':
-          filterDate.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          filterDate.setMonth(now.getMonth() - 1);
-          break;
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest': return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'oldest': return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'rental-start': 
+          const aStart = Math.min(...a.items.map(item => new Date(item.rental_start_date)));
+          const bStart = Math.min(...b.items.map(item => new Date(item.rental_start_date)));
+          return aStart - bStart;
+        default: return 0;
       }
-      
-      filtered = filtered.filter(order => 
-        new Date(order.createdAt) >= filterDate
-      );
-    }
+    });
 
     setFilteredOrders(filtered);
   };
 
-  const handleReturn = async (orderId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/returns', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ orderId }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Return request failed');
-      }
-
-      setOrders(prev =>
-        prev.map(o =>
-          o._id === orderId ? { ...o, status: 'Return Requested' } : o
-        )
-      );
-    } catch (err) {
-      console.error('Return error:', err);
-      alert('Failed to request return. Please try again.');
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'shipped': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'delivered': return 'bg-green-50 text-green-700 border-green-200';
+      case 'returned': return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'cancelled': return 'bg-red-50 text-red-700 border-red-200';
+      default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
-  const handleApprove = async (orderId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/orders/${orderId}/approve`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to approve order');
-      }
-
-      setOrders(prev =>
-        prev.map(o =>
-          o._id === orderId ? { ...o, status: 'Approved' } : o
-        )
-      );
-    } catch (err) {
-      console.error('Approve error:', err);
-      alert('Failed to approve order. Please try again.');
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'confirmed': return <CheckCircle className="w-4 h-4" />;
+      case 'shipped': return <Truck className="w-4 h-4" />;
+      case 'delivered': return <Package className="w-4 h-4" />;
+      case 'returned': return <CheckCircle className="w-4 h-4" />;
+      case 'cancelled': return <X className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
     }
   };
 
-  const handleReject = async (orderId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/orders/${orderId}/reject`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const getStatusMessage = (order) => {
+    const now = new Date();
+    const startDate = new Date(Math.min(...order.items.map(item => new Date(item.rental_start_date))));
+    const endDate = new Date(Math.max(...order.items.map(item => new Date(item.rental_end_date))));
 
-      if (!res.ok) {
-        throw new Error('Failed to reject order');
-      }
-
-      setOrders(prev =>
-        prev.map(o =>
-          o._id === orderId ? { ...o, status: 'Cancelled' } : o
-        )
-      );
-    } catch (err) {
-      console.error('Reject error:', err);
-      alert('Failed to reject order. Please try again.');
+    switch (order.status) {
+      case 'confirmed':
+        const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+        return daysUntilStart > 0 ? `Rental starts in ${daysUntilStart} days` : 'Rental starting soon';
+      case 'shipped':
+        return order.estimatedDelivery 
+          ? `Expected delivery: ${new Date(order.estimatedDelivery).toLocaleDateString()}`
+          : 'On the way to you';
+      case 'delivered':
+        const daysUntilReturn = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+        if (daysUntilReturn > 0) {
+          return `Return in ${daysUntilReturn} days`;
+        } else if (daysUntilReturn === 0) {
+          return 'Return today';
+        } else {
+          return 'Return overdue';
+        }
+      case 'returned':
+        return 'Rental completed';
+      case 'cancelled':
+        return 'Order cancelled';
+      default:
+        return '';
     }
   };
 
-  const handleContact = (order) => {
-    const contactInfo = userRole === 'renter' ? order.owner : order.renter;
-    const message = `Hi, I'm contacting you regarding order #${order._id?.slice(-8)} for ${order.item?.name || order.item?.title}.`;
-    window.open(`mailto:${contactInfo?.email}?subject=Order Inquiry&body=${encodeURIComponent(message)}`);
+  const handleOrderClick = (order) => {
+    setSelectedOrder(order);
+    setShowOrderDetails(true);
   };
 
-  const handleRate = async (orderId, rating, review) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/orders/${orderId}/rate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ rating, review }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to submit rating');
-      }
-
-      setOrders(prev =>
-        prev.map(o =>
-          o._id === orderId ? { ...o, rated: true, rating, review } : o
-        )
-      );
-    } catch (err) {
-      console.error('Rating error:', err);
-      alert('Failed to submit rating. Please try again.');
-    }
+  const handleTrackOrder = (order) => {
+    setTrackingOrder(order);
+    setShowTrackingModal(true);
   };
 
-  const exportOrders = () => {
-    const csvContent = [
-      ['Order ID', 'Item', 'Status', 'Amount', 'Date', 'Duration'].join(','),
-      ...filteredOrders.map(order => [
-        order._id?.slice(-8),
-        order.item?.name || order.item?.title,
-        order.status,
-        order.totalAmount,
-        new Date(order.createdAt).toLocaleDateString(),
-        order.duration
-      ].join(','))
-    ].join('\n');
+  const handleContactVendor = (order) => {
+    // Implementation for contacting vendor
+    console.log('Contacting vendor for order:', order.id);
+  };
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+  const handleRentAgain = (order) => {
+    // Navigate to product pages with the same items
+    console.log('Rent again:', order.id);
+  };
+
+  const handleReportIssue = (order) => {
+    // Implementation for reporting issues
+    console.log('Reporting issue for order:', order.id);
+  };
+
+  const getRentalDuration = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    return `${days} day${days > 1 ? 's' : ''}`;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-neutral-200 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-neutral-200 rounded-xl"></div>
-              ))}
-            </div>
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-neutral-200 rounded-2xl"></div>
-              ))}
-            </div>
-          </div>
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <div className="text-center space-y-4">
+          <div className="animate-spin h-12 w-12 border-4 border-gray-200 border-t-gray-600 rounded-full mx-auto" />
+          <p className="text-gray-600">Loading your rentals...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <div className="bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">
-                {userRole === 'owner' ? 'Rental Requests' : 'My Orders'}
-              </h1>
-              <p className="text-neutral-600 mt-1">
-                {userRole === 'owner' 
-                  ? 'Manage incoming rental requests and track your items'
-                  : 'Track your rental orders and manage returns'
-                }
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <button
-                onClick={exportOrders}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Export
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Rentals</h1>
+          <p className="text-gray-600">Track your current and past rental orders</p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
+        {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-neutral-100">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">Total Orders</p>
-                <p className="text-2xl font-bold text-neutral-900">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-600">Active Rentals</p>
+                <p className="text-2xl font-bold text-green-600">{orderStats.active}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Package className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-green-50 rounded-lg">
+                <Package className="w-6 h-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-neutral-100">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">Pending</p>
-                <p className="text-2xl font-bold text-neutral-900">{stats.pending}</p>
+                <p className="text-sm font-medium text-gray-600">Upcoming</p>
+                <p className="text-2xl font-bold text-blue-600">{orderStats.upcoming}</p>
               </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Clock className="w-6 h-6 text-amber-600" />
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <Calendar className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-neutral-100">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">Delivered</p>
-                <p className="text-2xl font-bold text-neutral-900">{stats.delivered}</p>
+                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-gray-600">{orderStats.completed}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-gray-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-neutral-100">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">
-                  {userRole === 'owner' ? 'Revenue' : 'Total Spent'}
-                </p>
-                <p className="text-2xl font-bold text-neutral-900">₹{stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{orderStats.total}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <Package className="w-6 h-6 text-gray-900" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-2xl border border-neutral-100 p-6 mb-8">
+        {/* Controls */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search orders..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-                />
-              </div>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search your rentals..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
 
-            {/* Date Filter */}
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="px-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-            >
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="week">Last Week</option>
-              <option value="month">Last Month</option>
-            </select>
-          </div>
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Active</option>
+                <option value="returned">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
 
-          {/* Status Tabs */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {statusTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-neutral-900 text-white'
-                      : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="rental-start">By Rental Date</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Orders List */}
-        <div className="space-y-6">
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 bg-neutral-100 rounded-full flex items-center justify-center">
-                <Package className="w-12 h-12 text-neutral-400" />
+        {filteredOrders.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
+            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No rentals found</h3>
+            <p className="text-gray-600 mb-6">
+              {orders.length === 0 
+                ? "You haven't rented anything yet. Start exploring!"
+                : "Try adjusting your filters to see more rentals."
+              }
+            </p>
+            {orders.length === 0 && (
+              <button
+                onClick={() => navigate('/products')}
+                className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Browse Items
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredOrders.map(order => (
+              <div key={order.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Order #{order.id.slice(-8)}</h3>
+                      <p className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric'
+                      })}</p>
+                      <p className="text-sm text-blue-600 mt-1">{getStatusMessage(order)}</p>
+                    </div>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
+                      {getStatusIcon(order.status)}
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div className="space-y-3 mb-4">
+                    {order.items.map(item => (
+                      <div key={item._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <img 
+                          src={item.images?.[0] || 'https://images.pexels.com/photos/441794/pexels-photo-441794.jpeg'} 
+                          alt={item.title} 
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{item.title}</h4>
+                          <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                          <div className="flex gap-4 text-xs text-gray-500 mt-1">
+                            <span>From: {new Date(item.rental_start_date).toLocaleDateString()}</span>
+                            <span>To: {new Date(item.rental_end_date).toLocaleDateString()}</span>
+                            <span>Duration: {getRentalDuration(item.rental_start_date, item.rental_end_date)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Order Footer */}
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-6">
+                      <span className="text-lg font-bold text-gray-900">₹{order.total.toLocaleString()}</span>
+                      <span className="text-sm text-gray-600">via {order.paymentMethod}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {(order.status === 'shipped' || order.status === 'delivered') && (
+                        <button
+                          onClick={() => handleTrackOrder(order)}
+                          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Track Order"
+                        >
+                          <MapPin className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleContactVendor(order)}
+                        className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Contact Vendor"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      {order.status === 'returned' && (
+                        <button
+                          onClick={() => handleRentAgain(order)}
+                          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Rent Again"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleOrderClick(order)}
+                        className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-neutral-900 mb-2">No orders found</h3>
-              <p className="text-neutral-600 mb-6">
-                {activeTab === 'all' 
-                  ? "You don't have any orders yet"
-                  : `No orders with status "${activeTab}"`
-                }
-              </p>
+            ))}
+          </div>
+        )}
+
+        {/* Order Details Modal */}
+        {showOrderDetails && selectedOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Order #{selectedOrder.id.slice(-8)}</h2>
+                    <p className="text-gray-600">{new Date(selectedOrder.createdAt).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric'
+                    })}</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowOrderDetails(false)} 
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Order Status */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Status</p>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border mt-1 ${getStatusColor(selectedOrder.status)}`}>
+                      {getStatusIcon(selectedOrder.status)}
+                      {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                    </div>
+                    <p className="text-sm text-blue-600 mt-1">{getStatusMessage(selectedOrder)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Payment Method</p>
+                    <p className="text-sm text-gray-900 mt-1">{selectedOrder.paymentMethod}</p>
+                  </div>
+                </div>
+
+                {/* Rental Items */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Rental Items</h3>
+                  <div className="space-y-4">
+                    {selectedOrder.items.map(item => (
+                      <div key={item._id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                        <img 
+                          src={item.images?.[0] || 'https://images.pexels.com/photos/441794/pexels-photo-441794.jpeg'} 
+                          alt={item.title}
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{item.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                            <span>Qty: {item.quantity}</span>
+                            <span>From: {new Date(item.rental_start_date).toLocaleDateString()}</span>
+                            <span>To: {new Date(item.rental_end_date).toLocaleDateString()}</span>
+                            <span>Duration: {getRentalDuration(item.rental_start_date, item.rental_end_date)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Summary */}
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                    <span>Total Amount</span>
+                    <span>₹{selectedOrder.total.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => handleContactVendor(selectedOrder)}
+                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Contact Vendor
+                  </button>
+                  {selectedOrder.status === 'delivered' && (
+                    <button
+                      onClick={() => handleReportIssue(selectedOrder)}
+                      className="flex-1 px-4 py-3 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      Report Issue
+                    </button>
+                  )}
+                  {selectedOrder.status === 'returned' && (
+                    <button
+                      onClick={() => handleRentAgain(selectedOrder)}
+                      className="flex-1 px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Rent Again
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          ) : (
-            filteredOrders.map((order) => (
-              <OrderCard
-                key={order._id}
-                order={order}
-                onReturn={handleReturn}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onContact={handleContact}
-                onRate={handleRate}
-                userRole={userRole}
-              />
-            ))
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Tracking Modal */}
+        {showTrackingModal && trackingOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">Track Order</h2>
+                  <button 
+                    onClick={() => setShowTrackingModal(false)} 
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">Order #{trackingOrder.id.slice(-8)}</p>
+                    {trackingOrder.trackingNumber && (
+                      <p className="text-sm font-medium text-gray-900">Tracking: {trackingOrder.trackingNumber}</p>
+                    )}
+                  </div>
+
+                  {/* Tracking Timeline */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">Order Confirmed</p>
+                        <p className="text-sm text-gray-600">{new Date(trackingOrder.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+
+                    {trackingOrder.status !== 'confirmed' && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                          <Truck className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Shipped</p>
+                          <p className="text-sm text-gray-600">On the way to you</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {trackingOrder.status === 'delivered' && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <Package className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Delivered</p>
+                          <p className="text-sm text-gray-600">Rental period active</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {trackingOrder.estimatedDelivery && (
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                      <p className="text-sm font-medium text-blue-900">Estimated Delivery</p>
+                      <p className="text-sm text-blue-700">{new Date(trackingOrder.estimatedDelivery).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default Orders;
+

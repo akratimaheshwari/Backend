@@ -10,7 +10,16 @@ const router = express.Router();
 
 router.post('/', verifyToken, upload.array("images", 5), createItem);
 router.get('/', getItems);
-router.get("/owner", verifyToken, getItemsByOwner);
+// GET /api/items/owner
+router.get('/owner', verifyToken, async (req, res) => {
+  try {
+    const items = await Item.find({ owner_id: req.user._id }).populate('category');
+    res.status(200).json(items);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch user listings' });
+  }
+});
+
 router.get('/featured', async (req, res) => {
   try {
     const items = await Item.find().limit(4); // Or add .sort() or filters if needed
@@ -42,13 +51,18 @@ router.get("/category/:slug", async (req, res) => {
 });
 router.get('/:id', async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id).populate('category');
+    const item = await Item.findById(req.params.id)
+      .populate('category')
+      .populate('owner', 'name email'); // ✅ populate only needed fields
+
     if (!item) return res.status(404).json({ message: 'Item not found' });
+
     res.json(item);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 router.get('/featured', async (req, res) => {
   try {

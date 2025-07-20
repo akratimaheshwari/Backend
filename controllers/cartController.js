@@ -3,23 +3,28 @@ import User from '../models/user.js';
 export const getCart = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('cart.item_id', 'title images pricing'); // ✅ only necessary fields
+      .populate('cart.item_id', 'title images pricing');
 
-    const populatedCart = user.cart.map((entry) => {
-      const item = entry.item_id;
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    user.cart = user.cart.filter(entry => entry.item_id);
+    await user.save();
 
-      return {
-        _id: entry._id,
-        item_id: item._id,
-        title: item.title,
-        image: item.images?.[0] || "https://via.placeholder.com/300x200",
-        price: item.pricing?.per_day ?? 0,
-        rental_type: entry.rental_type,
-        rental_start_date: entry.rental_start_date,
-        rental_end_date: entry.rental_end_date,
-        quantity: entry.quantity
-      };
-    });
+    const populatedCart = user.cart
+      .filter((entry) => entry.item_id) // ✅ Skip if item_id is null (deleted item)
+      .map((entry) => {
+        const item = entry.item_id;
+        return {
+          _id: entry._id,
+          item_id: item._id,
+          title: item.title,
+          image: item.images?.[0] || "https://via.placeholder.com/300x200",
+          price: item.pricing?.per_day ?? 0,
+          rental_type: entry.rental_type,
+          rental_start_date: entry.rental_start_date,
+          rental_end_date: entry.rental_end_date,
+          quantity: entry.quantity
+        };
+      });
 
     res.status(200).json(populatedCart);
   } catch (error) {
@@ -28,11 +33,13 @@ export const getCart = async (req, res) => {
   }
 };
 
+
 export const addToCart = async (req, res) => {
   const { item_id, quantity, rental_type, rental_start_date, rental_end_date } = req.body;
 
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
+
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.cart.push({ item_id, quantity, rental_type, rental_start_date, rental_end_date });
@@ -48,7 +55,8 @@ export const removeFromCart = async (req, res) => {
   const { itemId } = req.params;
 
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
+
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.cart = user.cart.filter(item => item._id.toString() !== itemId);
@@ -59,13 +67,25 @@ export const removeFromCart = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+export const clearCart = async (req, res) => {
+  try {
+    console.log("User ID from token:", req.user.id); // Debug line
+    await Cart.deleteMany({ user_id: req.user.id });
+    res.status(200).json({ message: 'Cart cleared successfully' });
+  } catch (err) {
+    console.error('Error clearing cart:', err);
+    res.status(500).json({ error: 'Failed to clear cart' });
+  }
+};
 
 export const updateCartQuantity = async (req, res) => {
   const { cartItemId } = req.params;
   const { quantity } = req.body;
 
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
+
+
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     // cartItemId ka use karke user.cart ke andar ka ek item nikalo

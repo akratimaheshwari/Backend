@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { ShoppingCart, ArrowLeft, CreditCard } from 'lucide-react';
 import CartItem from '../components/CartItem';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
-
+  const navigate = useNavigate();
   useEffect(() => {
     fetchCart();
   }, []);
@@ -14,7 +15,7 @@ const Cart = () => {
   const fetchCart = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/cart/', {
+      const res = await fetch('/api/cart/', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -30,7 +31,7 @@ const Cart = () => {
 
   const removeFromCart = async (itemId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/cart/remove/${itemId}`, {
+      const res = await fetch(`/api/cart/remove/${itemId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -46,7 +47,7 @@ const Cart = () => {
 
   const updateQuantity = async (cartItemId, newQty) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/cart/update/${cartItemId}`, {
+      const res = await fetch(`/api/cart/update/${cartItemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -68,9 +69,31 @@ const Cart = () => {
   };
 
   const total = cartItems.reduce(
-    (sum, item) => sum + (item.pricing?.per_day || 0) * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const handleCheckout = () => {
+  const hasRentalDates = cartItems.every(item => item.rental_start_date && item.rental_end_date);
+  if (!hasRentalDates) {
+    alert('Please select rental start and end dates for all items.');
+    return;
+  }
+
+  const selectedItemIds = cartItems.map(item => item._id);
+  navigate('/checkout', { state: { selectedItemIds } });
+};
+
+  const updateRentalDates = (cartItemId, field, value) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item._id === cartItemId ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+
+
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -104,8 +127,8 @@ const Cart = () => {
           <div className="flex justify-between items-center h-16">
             <h1 className="text-2xl font-bold text-neutral-900">RentKart</h1>
             <nav>
-              <a 
-                href="/" 
+              <a
+                href="/home"
                 className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -157,15 +180,17 @@ const Cart = () => {
                   item={item}
                   onDelete={removeFromCart}
                   onQuantityChange={updateQuantity}
+                  onDateChange={updateRentalDates} // ✅ Add this
                 />
               ))}
+
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 sticky top-24">
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">Order Summary</h3>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-neutral-600">
                     <span>Subtotal ({totalItems} items)</span>
@@ -183,14 +208,17 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-neutral-900 text-white py-3 px-4 rounded-lg font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-neutral-900 text-white py-3 px-4 rounded-lg font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                >
                   <CreditCard className="w-5 h-5" />
                   Proceed to Checkout
                 </button>
 
-                <p className="text-xs text-neutral-500 text-center mt-4">
-                  Secure checkout powered by industry-standard encryption
-                </p>
+                {/* <p className="text-xs text-neutral-500 text-center mt-4">
+                 
+                </p> */}
               </div>
             </div>
           </div>

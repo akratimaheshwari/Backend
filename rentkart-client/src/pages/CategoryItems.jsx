@@ -53,7 +53,7 @@ const CategoryItems = () => {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/items/category/${slug}`);
+      const res = await fetch(`/api/items/category/${slug}`);
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -70,7 +70,7 @@ const CategoryItems = () => {
 
   const handleLike = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/items/${id}/like`, {
+      await fetch(`/api/items/${id}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ const CategoryItems = () => {
   const handleAddToCart = async (item) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/cart/add', {
+      const res = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

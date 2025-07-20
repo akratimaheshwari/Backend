@@ -12,7 +12,7 @@ const itemSchema = new mongoose.Schema({
   },
   condition: {
     type: String,
-    enum: ['new', 'good', 'used'],
+    enum: ['New','Like New' ,'Good','Fair', 'Used'],
     default: 'good'
   },
   // availability: { type: Boolean, default: true },
@@ -26,6 +26,11 @@ const itemSchema = new mongoose.Schema({
   quantity: { type: Number, default: 1 },
   rental_start_date: Date,
   rental_end_date: Date,
+  deposit: {
+  type: Number,
+  default: 0
+}
+
 
 }, { timestamps: true });
 const Item = mongoose.models.Item|| mongoose.model('Item', itemSchema);

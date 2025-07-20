@@ -1,16 +1,6 @@
-import React, { useState } from 'react';
-import {
-  Upload,
-  MapPin,
-  Calendar,
-  DollarSign,
-  Tag,
-  FileText,
-  Camera,
-  Check,
-  AlertCircle
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Check, AlertCircle } from 'lucide-react';
 
 const AddItem = () => {
   const navigate = useNavigate();
@@ -32,31 +22,50 @@ const AddItem = () => {
   });
 
   const [images, setImages] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const categories = [
-    'Electronics', 'Tools & Equipment', 'Furniture', 'Vehicles',
-    'Sports & Recreation', 'Photography', 'Party & Events',
-    'Home & Garden', 'Fashion & Accessories', 'Books & Education'
-  ];
+  const conditions = ['New', 'Like New', 'Good', 'Fair', 'Used'];
 
-  const conditions = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (Array.isArray(data)) setCategories(data);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
 
-  const uploadToCloudinary = async (file) => {
-    const data = new FormData();
-    data.append('file', file);
-    data.append('upload_preset', 'YOUR_CLOUDINARY_UPLOAD_PRESET');
-    data.append('cloud_name', 'YOUR_CLOUD_NAME');
+    fetchCategories();
+  }, []);
 
-    const res = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', {
-      method: 'POST',
-      body: data
-    });
-    const json = await res.json();
-    return json.secure_url;
-  };
+ const uploadToCloudinary = async (file) => {
+  const data = new FormData();
+  data.append('file', file);
+  data.append('upload_preset', 'rentkart_upload'); // change if needed
+  data.append('cloud_name', 'dt04wn9iy');           // your cloud name
+
+  const res = await fetch('https://api.cloudinary.com/v1_1/dt04wn9iy/image/upload', {
+    method: 'POST',
+    body: data
+  });
+
+  const json = await res.json();
+  console.log("🌩️ Cloudinary response:", json); // ✅ LOG the error
+
+  if (!json.secure_url) {
+    console.error("Cloudinary upload failed:", json);
+    return null;
+  }
+
+  return json.secure_url;
+};
+
+
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -73,62 +82,89 @@ const AddItem = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setSuccess(false);
 
-    try {
-      const uploadedImageUrls = await Promise.all(
-        images.map((img) => uploadToCloudinary(img))
-      );
+  // ✅ Frontend field validation
+  if (
+    !formData.title.trim() ||
+    !formData.description.trim() ||
+    !formData.category ||
+    !formData.condition ||
+    !formData.location.trim() ||
+    !formData.pricingPerDay ||
+    !formData.availabilityStart ||
+    !formData.availabilityEnd ||
+    !formData.phone.trim() ||
+    !formData.email.trim() ||
+    images.length === 0
+  ) {
+    setError("Please fill all required fields (deposit is optional).");
+    setLoading(false);
+    return;
+  }
 
-      const payload = {
-        ...formData,
-        images: uploadedImageUrls,
-        pricing: {
-          per_day: Number(formData.pricingPerDay),
-          per_week: Number(formData.pricingPerWeek),
-          per_month: Number(formData.pricingPerMonth)
-        },
-        availability: {
-          startDate: formData.availabilityStart,
-          endDate: formData.availabilityEnd
-        },
-        contactInfo: {
-          phone: formData.phone,
-          email: formData.email
-        }
-      };
+  try {
+    const uploadedImageUrls = await Promise.all(images.map(uploadToCloudinary));
 
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/items', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      condition: formData.condition,
+      category: formData.category,
+      pricing: {
+        per_day: Number(formData.pricingPerDay),
+        per_week: Number(formData.pricingPerWeek),
+        per_month: Number(formData.pricingPerMonth)
+      },
+      deposit: formData.deposit ? Number(formData.deposit) : undefined, // ✅ Optional
+      location: formData.location,
+      availability: {
+        startDate: formData.availabilityStart,
+        endDate: formData.availabilityEnd
+      },
+      contactInfo: {
+        phone: formData.phone,
+        email: formData.email
+      },
+      images: uploadedImageUrls
+    };
 
-      if (!res.ok) throw new Error('Failed to add item');
-      setSuccess(true);
-      setImages([]);
-      setFormData({
-        title: '', description: '', category: '', condition: '', location: '',
-        availabilityStart: '', availabilityEnd: '',
-        pricingPerDay: '', pricingPerWeek: '', pricingPerMonth: '',
-        deposit: '', phone: '', email: ''
-      });
+    console.log("📦 Final Payload:", payload);
 
-      setTimeout(() => navigate('/my-listings'), 2000);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to add item. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/items', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('Failed to add item');
+
+    setSuccess(true);
+    setImages([]);
+    setFormData({
+      title: '', description: '', category: '', condition: '', location: '',
+      availabilityStart: '', availabilityEnd: '',
+      pricingPerDay: '', pricingPerWeek: '', pricingPerMonth: '',
+      deposit: '', phone: '', email: ''
+    });
+
+    setTimeout(() => navigate('/my-listings'), 2000);
+  } catch (err) {
+    console.error(err);
+    setError('Failed to add item. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-white py-10 px-4 max-w-3xl mx-auto">
@@ -140,14 +176,19 @@ const AddItem = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input name="title" value={formData.title} onChange={handleChange} placeholder="Title" className="w-full border px-4 py-2 rounded" />
         <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" className="w-full border px-4 py-2 rounded" />
+
         <select name="category" value={formData.category} onChange={handleChange} className="w-full border px-4 py-2 rounded">
           <option value="">Select Category</option>
-          {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+          {categories.map((cat) => (
+            <option key={cat._id} value={cat._id}>{cat.title}</option>
+          ))}
         </select>
+
         <select name="condition" value={formData.condition} onChange={handleChange} className="w-full border px-4 py-2 rounded">
           <option value="">Select Condition</option>
           {conditions.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
+
         <input name="location" value={formData.location} onChange={handleChange} placeholder="Location" className="w-full border px-4 py-2 rounded" />
 
         <div className="grid grid-cols-3 gap-4">
@@ -194,3 +235,5 @@ const AddItem = () => {
 };
 
 export default AddItem;
+
+

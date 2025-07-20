@@ -19,6 +19,9 @@ import returnRoutes from './routes/returnRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import categoryRoutes from "./routes/categoryRoutes.js";
+import addressRoutes from './routes/addressRoutes.js';
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,7 +44,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use("/api/categories", categoryRoutes);
-
+app.use('/api/addresses', addressRoutes);
 
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);

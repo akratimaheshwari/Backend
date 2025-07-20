@@ -12,6 +12,7 @@ import ItemsDetails from "./pages/ItemsDetails";
 import Cart from "./pages/Cart";
 import MyListing from "./pages/MyListing";
 import AddItems from "./pages/AddItems";
+import Checkout from "./pages/Checkout";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/my-listings" element={<MyListing />} />
         <Route path="/add-item" element={<AddItems />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Routes>
     </Router>
   );
