@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Calendar, 
-  Star, 
-  Heart, 
-  Share2, 
-  Shield, 
-  Clock, 
+import {
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  Star,
+  Heart,
+  Share2,
+  Shield,
+  Clock,
   User,
   MessageCircle,
   ShoppingCart,
@@ -47,33 +47,36 @@ const ItemDetails = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-  try {
-    const token = localStorage.getItem('token');
-const res = await fetch('/api/cart/add', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify({
-    item_id: item._id,                         // ✅ CORRECT key
-    quantity: quantity,
-    rental_type: `per_${selectedPeriod}`,      // ✅ per_day / per_week / per_month
-    rental_start_date: startDate,
-    rental_end_date: endDate
-  })
-});
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          item_id: item._id,                         // ✅ CORRECT key
+          quantity: quantity,
+          rental_type: `per_${selectedPeriod}`,      // ✅ per_day / per_week / per_month
+          rental_start_date: startDate,
+          rental_end_date: endDate
+        })
+      });
 
 
-    if (res.ok) {
-      alert('Item added to cart successfully!');
-    } else {
-      alert('Failed to add to cart');
+      if (res.ok) {
+        alert('Item added to cart successfully!');
+      } else {
+        alert('Failed to add to cart');
+      }
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
     }
-  } catch (err) {
-    console.error("Failed to add to cart:", err);
-  }
-};
+  };
+  const ownerSince = item?.owner_id?.createdAt
+    ? new Date(item.owner_id.createdAt).getFullYear()
+    : '2022';
 
   const calculatePrice = () => {
     const basePrice = item?.pricing?.[`per_${selectedPeriod}`] || item?.price || 0;
@@ -144,10 +147,10 @@ const res = await fetch('/api/cart/add', {
           {/* Image Gallery */}
           <div className="space-y-4">
             <div className="relative">
-              <Carousel 
-                showThumbs={true} 
-                infiniteLoop 
-                autoPlay 
+              <Carousel
+                showThumbs={true}
+                infiniteLoop
+                autoPlay
                 showStatus={false}
                 className="rounded-2xl overflow-hidden"
               >
@@ -160,25 +163,24 @@ const res = await fetch('/api/cart/add', {
                     />
                   </div>
                 )) || (
-                  <div className="h-[500px]">
-                    <img
-                      src="https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=800"
-                      alt={item.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
+                    <div className="h-[500px]">
+                      <img
+                        src="https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=800"
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
               </Carousel>
-              
+
               {/* Action Buttons Overlay */}
               <div className="absolute top-4 right-4 flex gap-2">
                 <button
                   onClick={() => setIsLiked(!isLiked)}
-                  className={`p-3 rounded-full backdrop-blur-sm transition-all ${
-                    isLiked 
-                      ? 'bg-red-500 text-white' 
-                      : 'bg-white/80 text-neutral-600 hover:bg-white'
-                  }`}
+                  className={`p-3 rounded-full backdrop-blur-sm transition-all ${isLiked
+                    ? 'bg-red-500 text-white'
+                    : 'bg-white/80 text-neutral-600 hover:bg-white'
+                    }`}
                 >
                   <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
                 </button>
@@ -231,44 +233,52 @@ const res = await fetch('/api/cart/add', {
             </div>
 
             {/* Owner Info */}
-            <div className="bg-white rounded-xl p-6 border border-neutral-100">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-neutral-200 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-neutral-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-neutral-900">{item.owner?.name || 'John Doe'}</h3>
-                  <p className="text-sm text-neutral-600">Owner since 2022</p>
-                </div>
-                <div className="ml-auto">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium">4.9</span>
-                  </div>
-                </div>
-              </div>
-              <button className="w-full bg-neutral-100 text-neutral-700 py-2 px-4 rounded-lg hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                Contact Owner
-              </button>
-            </div>
+            {item.owner_id ? (
+  <div className="bg-white rounded-xl p-6 border border-neutral-100">
+    <div className="flex items-center gap-4 mb-4">
+      <div className="w-12 h-12 bg-neutral-200 rounded-full flex items-center justify-center">
+        <User className="w-6 h-6 text-neutral-600" />
+      </div>
+      <div>
+        <h3 className="font-semibold text-neutral-900">
+         Owner: {item?.owner?.name || 'Unknown'}
+        </h3>
+        <p className="text-sm text-neutral-600">
+          Joined: {item?.owner?.createdAt ? new Date(item.owner.createdAt).toLocaleDateString() : 'N/A'}
+        </p>
+      </div>
+      <div className="ml-auto">
+        <div className="flex items-center gap-1">
+          <Star className="w-4 h-4 text-yellow-400 fill-current" />
+          <span className="text-sm font-medium">4.9</span>
+        </div>
+      </div>
+    </div>
+    <button className="w-full bg-neutral-100 text-neutral-700 py-2 px-4 rounded-lg hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
+      <MessageCircle className="w-4 h-4" />
+      Contact Owner
+    </button>
+  </div>
+) : (
+  <div className="text-neutral-500 text-sm">Loading owner info...</div>
+)}
+
 
             {/* Pricing & Booking */}
             <div className="bg-white rounded-xl p-6 border border-neutral-100 sticky top-8">
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">Rental Options</h3>
-                
+
                 {/* Period Selection */}
                 <div className="grid grid-cols-3 gap-2 mb-4">
                   {['day', 'week', 'month'].map(period => (
                     <button
                       key={period}
                       onClick={() => setSelectedPeriod(period)}
-                      className={`p-3 rounded-lg border text-center transition-all ${
-                        selectedPeriod === period
-                          ? 'border-neutral-900 bg-neutral-900 text-white'
-                          : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`p-3 rounded-lg border text-center transition-all ${selectedPeriod === period
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
+                        : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     >
                       <div className="text-sm font-medium capitalize">{period}</div>
                       <div className="text-xs opacity-75">
@@ -397,39 +407,39 @@ const res = await fetch('/api/cart/add', {
 
             <div className="flex gap-3">
               <button
-  onClick={async () => {
-    try {
-      
-      const token = localStorage.getItem('token');
-const res = await fetch('/api/cart/add', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify({
-    item_id: item._id,                         // ✅ CORRECT key
-    quantity: quantity,
-    rental_type: `per_${selectedPeriod}`,      // ✅ per_day / per_week / per_month
-    rental_start_date: startDate,
-    rental_end_date: endDate
-  })
-});
+                onClick={async () => {
+                  try {
+
+                    const token = localStorage.getItem('token');
+                    const res = await fetch('/api/cart/add', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: JSON.stringify({
+                        item_id: item._id,                         // ✅ CORRECT key
+                        quantity: quantity,
+                        rental_type: `per_${selectedPeriod}`,      // ✅ per_day / per_week / per_month
+                        rental_start_date: startDate,
+                        rental_end_date: endDate
+                      })
+                    });
 
 
-      if (res.ok) {
-        window.location.href = '/cart';
-      } else {
-        alert("Failed to add to cart");
-      }
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-    }
-  }}
-  className="flex-1 px-4 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium"
->
-  Confirm Booking
-</button>
+                    if (res.ok) {
+                      window.location.href = '/cart';
+                    } else {
+                      alert("Failed to add to cart");
+                    }
+                  } catch (err) {
+                    console.error("Error adding to cart:", err);
+                  }
+                }}
+                className="flex-1 px-4 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium"
+              >
+                Confirm Booking
+              </button>
 
 
             </div>

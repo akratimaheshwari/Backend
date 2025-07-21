@@ -109,7 +109,8 @@ const AddItem = () => {
 
   try {
     const uploadedImageUrls = await Promise.all(images.map(uploadToCloudinary));
-
+    const user = JSON.parse(localStorage.getItem('user'));
+    const owner_id = user?._id;
     const payload = {
       title: formData.title,
       description: formData.description,
@@ -130,7 +131,8 @@ const AddItem = () => {
         phone: formData.phone,
         email: formData.email
       },
-      images: uploadedImageUrls
+      images: uploadedImageUrls,
+      owner_id 
     };
 
     console.log("📦 Final Payload:", payload);

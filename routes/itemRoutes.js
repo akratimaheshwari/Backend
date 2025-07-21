@@ -1,5 +1,5 @@
 import express from 'express';
-import { createItem, getItems,updateItem,deleteItem ,getItemsByOwner} from '../controllers/itemController.js';
+import { createItem, getItems,updateItem,deleteItem ,getItemsByOwner,getFeaturedItems} from '../controllers/itemController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import upload from '../middleware/upload.js'; 
 import Category from "../models/category.js";
@@ -19,7 +19,7 @@ router.get('/owner', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user listings' });
   }
 });
-
+router.get('/featured', getFeaturedItems);
 
 
 router.put('/:id', verifyToken, updateItem);   // 🔐 Protected
@@ -39,19 +39,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// GET /api/items/featured?location=Delhi
-// 🔥 Featured items with optional location
-router.get('/featured', async (req, res) => {
-  try {
-    const { location } = req.query;
-    const filter = location ? { location: { $regex: location, $options: 'i' } } : {};
-
-    const items = await Item.find(filter).limit(4);
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch featured items' });
-  }
-});
 
 
 // GET /api/items/category/:slug

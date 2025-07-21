@@ -16,7 +16,7 @@ import {
   DollarSign,
   Plus,
   Eye,
-  TrendingUp,
+  Truck,
   Shield
 } from 'lucide-react';
 
@@ -47,15 +47,15 @@ const UserDashboard = () => {
 
   const quickActions = {
     renter: [
-      { icon: Eye, label: 'Browse Items', color: 'bg-gray-600 hover:bg-gray-700', action: () => navigate('/browse') },
+      { icon: Eye, label: 'Browse Items', color: 'bg-gray-600 hover:bg-gray-700', action: () => navigate('/items') },
       { icon: Heart, label: 'My Favorites', color: 'bg-gray-700 hover:bg-gray-800', action: () => navigate('/favorites') },
-      { icon: Calendar, label: 'My Bookings', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/bookings') },
+      { icon: Calendar, label: 'My Orders', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/orders') },
       { icon: DollarSign, label: 'Payment History', color: 'bg-gray-800 hover:bg-gray-900', action: () => navigate('/payments') }
     ],
     owner: [
       { icon: Plus, label: 'Add New Item', color: 'bg-gray-600 hover:bg-gray-700', action: () => navigate('/add-item') },
       { icon: Package, label: 'My Listings', color: 'bg-gray-700 hover:bg-gray-800', action: () => navigate('/my-listings') },
-      { icon: TrendingUp, label: 'Analytics', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/analytics') },
+      { icon: Truck, label: 'Rental Orders', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/owner-order') },
       { icon: DollarSign, label: 'Earnings', color: 'bg-gray-800 hover:bg-gray-900', action: () => navigate('/earnings') }
     ]
   };

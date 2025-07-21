@@ -94,41 +94,33 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (!validateStep2()) return;
+  setIsLoading(true);
 
-    if (!validateStep2()) return;
+  try {
+    const response = await fetch('/api/users/form', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
 
-    setIsLoading(true);
+    const data = await response.json();
 
-    try {
-      const response = await fetch('/api/users/form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          address: formData.address
-        }),
-      });
+    if (!response.ok) throw new Error(data.message || 'Signup failed');
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Signup failed');
-      }
+    // ✅ Store token in localStorage
+    localStorage.setItem('token', data.token);
 
-      navigate('/login', { 
-        state: { message: 'Account created successfully! Please sign in.' }
-      });
-    } catch (error) {
-      setErrors({ general: error.message });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // ✅ Redirect to home
+    navigate('/home');
+  } catch (error) {
+    setErrors({ general: error.message });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const steps = [
     { number: 1, title: 'Basic Info', description: 'Name and email' },

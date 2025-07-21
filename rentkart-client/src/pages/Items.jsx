@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Filter, Grid, List, SlidersHorizontal, MapPin, Star } from 'lucide-react';
 import ItemCard from '../components/ItemCard';
-
+// import Navbar from '../components/Navbar';
 const ItemPage = () => {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
@@ -11,38 +11,46 @@ const ItemPage = () => {
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
 
-  const categories = [
-    { id: 'all', name: 'All Items', count: 0 },
-    { id: 'appliances', name: 'Appliances', count: 0 },
-    { id: 'furniture', name: 'Furniture', count: 0 },
-    { id: 'vehicles', name: 'Vehicles', count: 0 },
-    { id: 'tools', name: 'Tools & Equipment', count: 0 },
-    { id: 'sports', name: 'Sports & Recreation', count: 0 },
-  ];
 
- const fetchItems = async (slug = '') => {
-  try {
-    setLoading(true);
-    let url = '/api/items';
-    if (slug && slug !== 'all') {
-      url = `/api/items/category/${slug}`;
+
+
+  const fetchItems = async (slug = '') => {
+    try {
+      setLoading(true);
+      let url = '/api/items';
+      if (slug && slug !== 'all') {
+        url = `/api/items/category/${slug}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      setItems(data);
+    } catch (err) {
+      console.error("Failed to fetch items:", err);
+    } finally {
+      setLoading(false);
     }
-    const res = await fetch(url);
-    const data = await res.json();
-    setItems(data);
-  } catch (err) {
-    console.error("Failed to fetch items:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   useEffect(() => {
     fetchItems();
   }, []);
 
+  useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const res = await fetch('/api/categories');
+          const data = await res.json();
+          if (Array.isArray(data)) setCategories(data);
+        } catch (err) {
+          console.error('Failed to fetch categories:', err);
+        }
+      };
+  
+      fetchCategories();
+    }, []);
   const handleLike = async (id) => {
     try {
       await fetch(`/api/items/${id}/like`, {
@@ -72,7 +80,7 @@ const ItemPage = () => {
           quantity: 1
         })
       });
-      
+
       if (res.ok) {
         // Show success notification
         alert('Item added to cart successfully!');
@@ -83,20 +91,20 @@ const ItemPage = () => {
   };
 
   const filteredAndSortedItems = items
-  .filter(item => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.description?.toLowerCase().includes(search.toLowerCase());
+    .filter(item => {
+      const matchesSearch =
+        item.title.toLowerCase().includes(search.toLowerCase()) ||
+        item.description?.toLowerCase().includes(search.toLowerCase());
 
-    const matchesCategory =
-      filterCategory === 'all' || item.category?.slug === filterCategory;
+      const matchesCategory =
+        filterCategory === 'all' || item.category?.slug === filterCategory;
 
-    const price = item.pricing?.per_day || item.price || 0;
-    const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
+      const price = item.pricing?.per_day || item.price || 0;
+      const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
 
-    return matchesSearch && matchesCategory && matchesPrice;
-  })
-  
+      return matchesSearch && matchesCategory && matchesPrice;
+    })
+
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
@@ -146,7 +154,7 @@ const ItemPage = () => {
                   {filteredAndSortedItems.length} items available for rent
                 </p>
               </div>
-              
+
               {/* Search Bar */}
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5" />
@@ -183,19 +191,19 @@ const ItemPage = () => {
                 <div>
                   <h4 className="font-medium text-neutral-900 mb-3">Categories</h4>
                   <div className="space-y-2">
-                    {categories.map(category => (
-                      <button
-                        key={category.id}
-                        onClick={() => setFilterCategory(category.id)}
-                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                          filterCategory === category.id
-                            ? 'bg-neutral-900 text-white'
-                            : 'text-neutral-600 hover:bg-neutral-100'
-                        }`}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
+                    {categories.length > 0 ? (
+                      categories.map(category => (
+                        <button
+                          key={category.slug}
+                          onClick={() => setFilterCategory(category.slug)}
+                          className={`...`}>
+                          {category.name}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-neutral-500">No categories found.</p>
+                    )}
+
                   </div>
                 </div>
 
@@ -236,9 +244,8 @@ const ItemPage = () => {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-4 h-4 ${
-                                i < rating ? 'text-yellow-400 fill-current' : 'text-neutral-300'
-                              }`}
+                              className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-neutral-300'
+                                }`}
                             />
                           ))}
                         </div>
@@ -272,17 +279,15 @@ const ItemPage = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+                    }`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+                    }`}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -309,15 +314,14 @@ const ItemPage = () => {
                 </button>
               </div>
             ) : (
-              <div className={`grid gap-6 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                  : 'grid-cols-1'
-              }`}>
+              <div className={`grid gap-6 ${viewMode === 'grid'
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                : 'grid-cols-1'
+                }`}>
                 {filteredAndSortedItems.map(item => (
-                  <ItemCard 
-                    key={item._id} 
-                    item={item} 
+                  <ItemCard
+                    key={item._id}
+                    item={item}
                     handleLike={handleLike}
                     onAddToCart={handleAddToCart}
                   />

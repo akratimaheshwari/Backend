@@ -13,17 +13,22 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [location, setLocation] = useState("");
 
-  useEffect(() => {
-    fetch('/api/items/featured')
-      .then(res => res.json())
-      .then(data => setFeaturedItems(Array.isArray(data) ? data : []))
-      .catch(err => console.error("Failed to fetch featured items", err));
+ useEffect(() => {
+  const url = location
+    ? `/api/items/featured?location=${encodeURIComponent(location)}`
+    : '/api/items/featured';
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => setFeaturedItems(Array.isArray(data) ? data : []))
+    .catch(err => console.error("Failed to fetch featured items", err));
+
 
     fetch('/api/categories')
       .then(res => res.json())
       .then(data => setCategories(Array.isArray(data) ? data : []))
       .catch(err => console.error("Failed to fetch categories", err));
-  }, []);
+  }, [location]);
 
   return (
     <>
@@ -38,4 +43,5 @@ const Home = () => {
 };
 
 export default Home;
+
 

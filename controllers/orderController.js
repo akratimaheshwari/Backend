@@ -55,18 +55,18 @@ export const getOrders = async (req, res) => {
 
 export const getOwnerOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate({
-        path: 'item',
-        match: { owner_id: req.user._id }, // filter items owned by logged-in user
-      })
-      .populate('renter_id', 'name email phone');
+    const ownerId = req.user.id;
 
-    const filteredOrders = orders.filter(order => order.item !== null);
+    const itemsOwned = await Item.find({ owner_id: ownerId }).select('_id');
+    const itemIds = itemsOwned.map(item => item._id);
 
-    res.json(filteredOrders);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch owner orders' });
+    const orders = await Order.find({ 'items.item': { $in: itemIds } })
+      .populate('items.item')
+      .populate('user', 'name email');
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching owner orders' });
   }
 };
 
