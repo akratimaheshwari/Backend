@@ -1,4 +1,4 @@
-import Wishlist from '../models/Wishlist.js';
+import Wishlist from '../models/wishlist.js';
 
 export const getWishlist = async (req, res) => {
   const userId = req.user.id;
