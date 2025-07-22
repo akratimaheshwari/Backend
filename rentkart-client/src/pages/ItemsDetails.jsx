@@ -46,9 +46,40 @@ const ItemDetails = () => {
     fetchItem();
   }, [id]);
 
+  const getAutoEndDate = (startDate, rentalType) => {
+    if (!startDate || !rentalType) return '';
+    const start = new Date(startDate);
+    let daysToAdd = 1;
+    if (rentalType === 'day') daysToAdd = 1;
+    else if (rentalType === 'week') daysToAdd = 7;
+    else if (rentalType === 'month') daysToAdd = 30;
+    const end = new Date(start);
+    end.setDate(start.getDate() + daysToAdd);
+    return end.toISOString().split('T')[0];
+  };
+
   const handleAddToCart = async () => {
     try {
       const token = localStorage.getItem('token');
+      const checkRes = await fetch('/api/items/check-availability', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          item_id: item._id,
+          rental_start_date: startDate,
+          rental_end_date: endDate,
+        }),
+      });
+
+      const checkData = await checkRes.json();
+      alert(checkData.message);
+      if (!checkData.available) {
+        alert(checkData.message || 'Item not available for selected dates');
+        return;
+      }
       const res = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {
@@ -234,34 +265,34 @@ const ItemDetails = () => {
 
             {/* Owner Info */}
             {item.owner_id ? (
-  <div className="bg-white rounded-xl p-6 border border-neutral-100">
-    <div className="flex items-center gap-4 mb-4">
-      <div className="w-12 h-12 bg-neutral-200 rounded-full flex items-center justify-center">
-        <User className="w-6 h-6 text-neutral-600" />
-      </div>
-      <div>
-        <h3 className="font-semibold text-neutral-900">
-         Owner: {item?.owner?.name || 'Unknown'}
-        </h3>
-        <p className="text-sm text-neutral-600">
-          Joined: {item?.owner?.createdAt ? new Date(item.owner.createdAt).toLocaleDateString() : 'N/A'}
-        </p>
-      </div>
-      <div className="ml-auto">
-        <div className="flex items-center gap-1">
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-          <span className="text-sm font-medium">4.9</span>
-        </div>
-      </div>
-    </div>
-    <button className="w-full bg-neutral-100 text-neutral-700 py-2 px-4 rounded-lg hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
-      <MessageCircle className="w-4 h-4" />
-      Contact Owner
-    </button>
-  </div>
-) : (
-  <div className="text-neutral-500 text-sm">Loading owner info...</div>
-)}
+              <div className="bg-white rounded-xl p-6 border border-neutral-100">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-neutral-200 rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-neutral-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-neutral-900">
+                      Owner: {item?.owner?.name || 'Unknown'}
+                    </h3>
+                    <p className="text-sm text-neutral-600">
+                      Joined: {item?.owner?.createdAt ? new Date(item.owner.createdAt).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="ml-auto">
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span className="text-sm font-medium">4.9</span>
+                    </div>
+                  </div>
+                </div>
+                <button className="w-full bg-neutral-100 text-neutral-700 py-2 px-4 rounded-lg hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  Contact Owner
+                </button>
+              </div>
+            ) : (
+              <div className="text-neutral-500 text-sm">Loading owner info...</div>
+            )}
 
 
             {/* Pricing & Booking */}
@@ -276,13 +307,13 @@ const ItemDetails = () => {
                       key={period}
                       onClick={() => setSelectedPeriod(period)}
                       className={`p-3 rounded-lg border text-center transition-all ${selectedPeriod === period
-                        ? 'border-neutral-900 bg-neutral-900 text-white'
-                        : 'border-neutral-200 hover:border-neutral-300'
+                          ? 'border-neutral-900 bg-neutral-900 text-white'
+                          : 'border-neutral-200 hover:border-neutral-300'
                         }`}
                     >
                       <div className="text-sm font-medium capitalize">{period}</div>
                       <div className="text-xs opacity-75">
-                        ₹{item.pricing?.[`per_${period}`] || item.price}
+                        ₹{item.pricing?.[`per_${period}`] || item.price} × {quantity} {period}(s)
                       </div>
                     </button>
                   ))}
@@ -319,7 +350,13 @@ const ItemDetails = () => {
                     <input
                       type="date"
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={(e) => {
+                        const selectedStart = e.target.value;
+                        const autoEnd = getAutoEndDate(selectedStart, selectedPeriod);
+                        setStartDate(selectedStart);
+                        setEndDate(autoEnd);
+                      }}
+
                       className="w-full p-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                     />
                   </div>

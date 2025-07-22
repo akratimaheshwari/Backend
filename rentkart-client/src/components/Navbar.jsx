@@ -53,13 +53,13 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    window.location.href = '/home';
   };
 
   const navLinks = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'My Listings', href: '/my-listings', icon: List },
-    { name: 'Favorites', href: '/favorites', icon: Heart },
+    { name: 'Favorites', href: '/wishlist', icon: Heart },
     { name: 'Messages', href: '/messages', icon: MessageCircle },
   ];
 

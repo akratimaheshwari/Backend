@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Search, 
-  MessageCircle, 
-  Package, 
-  Star, 
-  Plus, 
-  DollarSign, 
+import {
+  Search,
+  MessageCircle,
+  Package,
+  Star,
+  Plus,
+  DollarSign,
   UserCircle,
   ShoppingCart,
   ClipboardList,
@@ -25,8 +25,11 @@ import {
   Instagram,
   Mail,
   Phone,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 export const Header = ({ location, setLocation }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -161,9 +164,8 @@ export const HeroCarousel = () => {
         {slides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-              currentSlide === index ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
-            }`}
+            className={`absolute inset-0 transition-all duration-700 ease-in-out ${currentSlide === index ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
+              }`}
           >
             <div className={`bg-gradient-to-r ${slide.gradient} h-full`}>
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
@@ -208,9 +210,8 @@ export const HeroCarousel = () => {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              currentSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
-            }`}
+            className={`w-3 h-3 rounded-full transition-all ${currentSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
+              }`}
           />
         ))}
       </div>
@@ -235,9 +236,56 @@ export const HeroCarousel = () => {
 export const FeaturedItems = ({ items, location }) => {
   const filteredItems = location
     ? items.filter(item =>
-        item.location?.toLowerCase().includes(location.toLowerCase())
-      )
+      item.location?.toLowerCase().includes(location.toLowerCase())
+    )
     : items;
+  const navigate = useNavigate();
+
+  const handleAddToCartAndCheckout = async (itemId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post('/api/cart/add', { itemId, quantity: 1 }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Item added to cart");
+      navigate('/cart');
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add item to cart");
+    }
+  };
+
+  const [wishlistItems, setWishlistItems] = useState([]);
+
+  const handleAddToWishlist = async (itemId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login first");
+        return;
+      }
+
+      const res = await axios.post(
+        '/api/wishlist/add',
+        { itemId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Optional: update state
+      setWishlistItems((prev) => [...prev, itemId]);
+      toast.success("Added to wishlist");
+
+    } catch (err) {
+      console.error("Error adding to wishlist", err);
+      toast.error("Failed to add to wishlist");
+    }
+  };
+
+
 
   return (
     <section className="py-16 bg-gray-100">
@@ -255,31 +303,49 @@ export const FeaturedItems = ({ items, location }) => {
           {filteredItems.map(item => (
             <div key={item._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
               <div className="relative overflow-hidden">
-                <img 
-                  src={item.images[0]} 
-                  alt={item.title} 
-                  className="h-48 w-full object-cover group-hover:scale-110 transition-transform duration-300" 
-                />
-                <div className="absolute top-4 right-4">
-                  <button className="bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all">
-                    <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+                <Link to={`/items/${item._id}`}>
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="h-48 w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </Link>
+
+                <div className="absolute top-3 right-3 z-10">
+                  <button
+                    onClick={() => handleAddToWishlist(item._id)}
+                    className="bg-white p-2 rounded-full shadow-md hover:shadow-lg transition"
+                  >
+                    <Heart
+                      className={`w-5 h-5 transition-colors ${wishlistItems.includes(item._id)
+                        ? "text-red-500"
+                        : "text-gray-500 hover:text-red-500"
+                        }`}
+                    />
                   </button>
                 </div>
+
+
+
                 <div className="absolute bottom-4 left-4">
                   <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                     Available
                   </span>
                 </div>
               </div>
-              
+
               <div className="p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                  {item.title}
-                </h4>
+                <Link to={`/items/${item._id}`} onClick={() => console.log("Navigating to", item._id)}>
+
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                    {item.title}
+                  </h4>
+                </Link>
+
                 <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                   {item.description}
                 </p>
-                
+
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -291,7 +357,7 @@ export const FeaturedItems = ({ items, location }) => {
                     <span>{item.location || 'N/A'}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-2xl font-bold text-gray-900">
                     ₹{item.pricing.per_day}
@@ -301,10 +367,13 @@ export const FeaturedItems = ({ items, location }) => {
                     ₹{item.pricing.per_week || item.pricing.per_day * 7}/week
                   </div>
                 </div>
-                
-                <button className="w-full bg-gray-800 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transform hover:scale-105 transition-all duration-200">
+                <button
+                  onClick={() => navigate(`/items/${item._id}`)}
+                  className="w-full bg-gray-800 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transform hover:scale-105 transition-all duration-200"
+                >
                   Rent Now
                 </button>
+
               </div>
             </div>
           ))}
@@ -335,20 +404,20 @@ export const CategorySection = ({ categories }) => (
           Find exactly what you need from our diverse range of rental categories
         </p>
       </div>
-      
+
       <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {categories.map(category =>
           category.slug ? (
-            <Link 
-              to={`/category/${category.slug}`} 
-              key={category._id} 
+            <Link
+              to={`/category/${category.slug}`}
+              key={category._id}
               className="group block bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200"
             >
               <div className="relative overflow-hidden">
-                <img 
-                  src={category.image} 
-                  alt={category.title} 
-                  className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300" 
+                <img
+                  src={category.image}
+                  alt={category.title}
+                  className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
@@ -364,7 +433,7 @@ export const CategorySection = ({ categories }) => (
           ) : null
         )}
       </div>
-      
+
       {categories.length === 0 && (
         <div className="text-center py-12">
           <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -461,7 +530,7 @@ export const HowItWorks = () => {
             How RentKart Works
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Whether you're looking to rent items or earn money from your unused belongings, 
+            Whether you're looking to rent items or earn money from your unused belongings,
             we make the process simple, secure, and rewarding
           </p>
         </div>
@@ -562,7 +631,7 @@ export const Footer = () => (
             <h3 className="text-2xl font-bold">RentKart</h3>
           </div>
           <p className="text-gray-400 mb-6 max-w-md">
-            The ultimate marketplace for renting and lending items. Turn your unused belongings into income 
+            The ultimate marketplace for renting and lending items. Turn your unused belongings into income
             or find exactly what you need without buying.
           </p>
           <div className="flex space-x-4">

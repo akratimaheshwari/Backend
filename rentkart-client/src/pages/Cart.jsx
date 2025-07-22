@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShoppingCart, ArrowLeft, CreditCard } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CreditCard,Trash2, Calendar } from 'lucide-react';
 import CartItem from '../components/CartItem';
 import { useNavigate } from 'react-router-dom';
 
@@ -105,7 +105,7 @@ const Cart = () => {
             <div className="flex justify-between items-center h-16">
               <h1 className="text-2xl font-bold text-neutral-900">RentKart</h1>
               <nav>
-                <a href="/" className="text-neutral-600 hover:text-neutral-900 font-medium transition-colors">
+                <a href="/home" className="text-neutral-600 hover:text-neutral-900 font-medium transition-colors">
                   Home
                 </a>
               </nav>
@@ -163,7 +163,7 @@ const Cart = () => {
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Your cart is empty</h3>
             <p className="text-neutral-600 mb-6">Start browsing our products to add items to your cart</p>
             <a
-              href="/"
+              href="/home"
               className="inline-flex items-center gap-2 bg-neutral-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-neutral-800 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -198,7 +198,7 @@ const Cart = () => {
                   </div>
                   <div className="flex justify-between text-neutral-600">
                     <span>Delivery</span>
-                    <span className="text-green-600">Free</span>
+                    <span className="text-green-600">20</span>
                   </div>
                   <div className="border-t border-neutral-200 pt-3">
                     <div className="flex justify-between text-lg font-semibold text-neutral-900">

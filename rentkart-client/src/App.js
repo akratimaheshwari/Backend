@@ -15,6 +15,7 @@ import Checkout from "./pages/Checkout";
 import ProfilePage from './pages/ProfilePage'; // or wherever the file is
 import ChangePassword from "./pages/ChangePassword";
 import OwnerOrders from "./pages/OwnerOrders";
+import Wishlist from './pages/Wishlist';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/owner-order" element={<OwnerOrders />} />
+        <Route path="/wishlist" element={<Wishlist />} />
 
       </Routes>
     </Router>

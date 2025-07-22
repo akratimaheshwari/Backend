@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { createOrder, getOrders,getOwnerOrders , checkout} from '../controllers/orderController.js';
+import { createOrder, getOrders,getOwnerOrders , checkout,markAsDelivered,markAsReturned,updateOrderStatus} from '../controllers/orderController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 
 router.post('/', verifyToken, createOrder);
@@ -32,7 +32,10 @@ router.post('/selected', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
+// PATCH /api/orders/:id/status
+router.patch('/:orderId/status', verifyToken, updateOrderStatus);
+router.patch('/:orderId/deliver', verifyToken, markAsDelivered);
+router.patch('/:orderId/return', verifyToken, markAsReturned);
 
 
 export default router;

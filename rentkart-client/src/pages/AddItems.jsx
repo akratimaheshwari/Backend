@@ -11,8 +11,6 @@ const AddItem = () => {
     category: '',
     condition: '',
     location: '',
-    availabilityStart: '',
-    availabilityEnd: '',
     pricingPerDay: '',
     pricingPerWeek: '',
     pricingPerMonth: '',
@@ -96,8 +94,6 @@ const AddItem = () => {
     !formData.condition ||
     !formData.location.trim() ||
     !formData.pricingPerDay ||
-    !formData.availabilityStart ||
-    !formData.availabilityEnd ||
     !formData.phone.trim() ||
     !formData.email.trim() ||
     images.length === 0
@@ -123,10 +119,6 @@ const AddItem = () => {
       },
       deposit: formData.deposit ? Number(formData.deposit) : undefined, // ✅ Optional
       location: formData.location,
-      availability: {
-        startDate: formData.availabilityStart,
-        endDate: formData.availabilityEnd
-      },
       contactInfo: {
         phone: formData.phone,
         email: formData.email
@@ -153,7 +145,6 @@ const AddItem = () => {
     setImages([]);
     setFormData({
       title: '', description: '', category: '', condition: '', location: '',
-      availabilityStart: '', availabilityEnd: '',
       pricingPerDay: '', pricingPerWeek: '', pricingPerMonth: '',
       deposit: '', phone: '', email: ''
     });
@@ -201,10 +192,6 @@ const AddItem = () => {
 
         <input name="deposit" value={formData.deposit} onChange={handleChange} placeholder="Deposit Amount" className="w-full border px-4 py-2 rounded" />
 
-        <div className="grid grid-cols-2 gap-4">
-          <input name="availabilityStart" value={formData.availabilityStart} onChange={handleChange} type="date" className="border px-4 py-2 rounded" />
-          <input name="availabilityEnd" value={formData.availabilityEnd} onChange={handleChange} type="date" className="border px-4 py-2 rounded" />
-        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="border px-4 py-2 rounded" />

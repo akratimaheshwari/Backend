@@ -99,7 +99,7 @@ const Signup = () => {
   setIsLoading(true);
 
   try {
-    const response = await fetch('/api/users/form', {
+    const response = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
@@ -107,12 +107,18 @@ const Signup = () => {
 
     const data = await response.json();
 
-    if (!response.ok) throw new Error(data.message || 'Signup failed');
+    if (response.status === 409) {
+      // 🔴 Show friendly message to user
+      setErrors({ general: data.message || 'User already exists. Please login.' });
+      return;
+    }
 
-    // ✅ Store token in localStorage
+    if (!response.ok) {
+      throw new Error(data.message || 'Signup failed');
+    }
+
+    // ✅ Success
     localStorage.setItem('token', data.token);
-
-    // ✅ Redirect to home
     navigate('/home');
   } catch (error) {
     setErrors({ general: error.message });
@@ -120,6 +126,7 @@ const Signup = () => {
     setIsLoading(false);
   }
 };
+
 
 
   const steps = [

@@ -48,7 +48,7 @@ const UserDashboard = () => {
   const quickActions = {
     renter: [
       { icon: Eye, label: 'Browse Items', color: 'bg-gray-600 hover:bg-gray-700', action: () => navigate('/items') },
-      { icon: Heart, label: 'My Favorites', color: 'bg-gray-700 hover:bg-gray-800', action: () => navigate('/favorites') },
+      { icon: Heart, label: 'My Wishlist', color: 'bg-gray-700 hover:bg-gray-800', action: () => navigate('/wishlist') },
       { icon: Calendar, label: 'My Orders', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/orders') },
       { icon: DollarSign, label: 'Payment History', color: 'bg-gray-800 hover:bg-gray-900', action: () => navigate('/payments') }
     ],

@@ -5,6 +5,7 @@ import {
   Download, MessageCircle, RotateCcw, ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import OrderHeader from '../components/OrderHeader';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -27,6 +28,10 @@ const Orders = () => {
     filterAndSortOrders();
   }, [orders, filterStatus, searchQuery, sortBy]);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const isLoggedIn = !!localStorage.getItem('token'); // optional
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -40,22 +45,22 @@ const Orders = () => {
 
       // Normalize and map structure
       const formatted = data.map(order => ({
-  id: order._id,
-  createdAt: order.createdAt,
-  total: order.totalAmount,
-  status: order.status,
-  paymentMethod: order.paymentMethod || 'COD',
-  items: order.items.map(item => ({
-    _id: item.item_id._id,
-    title: item.item_id.title,
-    description: item.item_id.description,
-    images: item.item_id.images || [],
-    pricing: item.item_id.pricing || {},
-    quantity: item.quantity,
-    rental_start_date: item.rental_start_date,
-    rental_end_date: item.rental_end_date,
-  })),
-}));
+        id: order._id,
+        createdAt: order.createdAt,
+        total: order.totalAmount,
+        status: order.status,
+        paymentMethod: order.paymentMethod || 'COD',
+        items: order.items.map(item => ({
+          _id: item.item_id._id,
+          title: item.item_id.title,
+          description: item.item_id.description,
+          images: item.item_id.images || [],
+          pricing: item.item_id.pricing || {},
+          quantity: item.quantity,
+          rental_start_date: item.startDate,  // ✅ use correct key
+          rental_end_date: item.endDate
+        })),
+      }));
 
 
       setOrders(formatted);
@@ -64,6 +69,10 @@ const Orders = () => {
     } finally {
       setLoading(false);
     }
+  };
+  const handleExport = () => {
+    // Optional: implement real CSV/Excel export later
+    console.log('Export clicked');
   };
 
   const orderStats = useMemo(() => {
@@ -93,7 +102,7 @@ const Orders = () => {
 
   const filterAndSortOrders = () => {
     let filtered = [...orders];
-    
+
     if (filterStatus !== 'all') {
       filtered = filtered.filter(order => order.status === filterStatus);
     }
@@ -111,7 +120,7 @@ const Orders = () => {
       switch (sortBy) {
         case 'newest': return new Date(b.createdAt) - new Date(a.createdAt);
         case 'oldest': return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'rental-start': 
+        case 'rental-start':
           const aStart = Math.min(...a.items.map(item => new Date(item.rental_start_date)));
           const bStart = Math.min(...b.items.map(item => new Date(item.rental_start_date)));
           return aStart - bStart;
@@ -154,7 +163,7 @@ const Orders = () => {
         const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
         return daysUntilStart > 0 ? `Rental starts in ${daysUntilStart} days` : 'Rental starting soon';
       case 'shipped':
-        return order.estimatedDelivery 
+        return order.estimatedDelivery
           ? `Expected delivery: ${new Date(order.estimatedDelivery).toLocaleDateString()}`
           : 'On the way to you';
       case 'delivered':
@@ -220,13 +229,17 @@ const Orders = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Rentals</h1>
-          <p className="text-gray-600">Track your current and past rental orders</p>
-        </div>
+      {/* ✅ Order Header with search/filter/export */}
+      <OrderHeader
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        onExport={handleExport}
+        isLoggedIn={isLoggedIn}
+      />
 
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -279,47 +292,7 @@ const Orders = () => {
         </div>
 
         {/* Controls */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search your rentals..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Active</option>
-                <option value="returned">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="rental-start">By Rental Date</option>
-              </select>
-            </div>
-          </div>
-        </div>
 
         {/* Orders List */}
         {filteredOrders.length === 0 ? (
@@ -327,14 +300,14 @@ const Orders = () => {
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No rentals found</h3>
             <p className="text-gray-600 mb-6">
-              {orders.length === 0 
+              {orders.length === 0
                 ? "You haven't rented anything yet. Start exploring!"
                 : "Try adjusting your filters to see more rentals."
               }
             </p>
             {orders.length === 0 && (
               <button
-                onClick={() => navigate('/products')}
+                onClick={() => navigate('/items')}
                 className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 Browse Items
@@ -346,12 +319,13 @@ const Orders = () => {
             {filteredOrders.map(order => (
               <div key={order.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
                 <div className="p-6">
+                  {console.log('🔍 Order:', order)}
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">Order #{order.id.slice(-8)}</h3>
-                      <p className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
+                      <p className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
                         day: 'numeric'
                       })}</p>
                       <p className="text-sm text-blue-600 mt-1">{getStatusMessage(order)}</p>
@@ -364,24 +338,31 @@ const Orders = () => {
 
                   {/* Order Items */}
                   <div className="space-y-3 mb-4">
-                    {order.items.map(item => (
-                      <div key={item._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                        <img 
-                          src={item.images?.[0] || 'https://images.pexels.com/photos/441794/pexels-photo-441794.jpeg'} 
-                          alt={item.title} 
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{item.title}</h4>
-                          <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                          <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                            <span>From: {new Date(item.rental_start_date).toLocaleDateString()}</span>
-                            <span>To: {new Date(item.rental_end_date).toLocaleDateString()}</span>
-                            <span>Duration: {getRentalDuration(item.rental_start_date, item.rental_end_date)}</span>
+                    {order.items.map(item => {
+                      console.log("🧾 Order Item:", item);
+                      return (
+                        <div key={item._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                          <img
+                            src={item.images?.[0] || 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=100'}
+                            alt={item.title}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{item.title || 'Item not found'}</h4>
+                            <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                            <div className="flex gap-4 text-xs text-gray-500 mt-1">
+                              <span>From:{ new Date(item.rental_start_date).toLocaleDateString('en-IN')}</span>
+                              <span> To: {item.rental_end_date ? new Date(item.rental_end_date).toLocaleDateString('en-IN') : 'N/A'}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+
+
+
+
                   </div>
 
                   {/* Order Footer */}
@@ -438,14 +419,14 @@ const Orders = () => {
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">Order #{selectedOrder.id.slice(-8)}</h2>
-                    <p className="text-gray-600">{new Date(selectedOrder.createdAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
+                    <p className="text-gray-600">{new Date(selectedOrder.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
                       day: 'numeric'
                     })}</p>
                   </div>
-                  <button 
-                    onClick={() => setShowOrderDetails(false)} 
+                  <button
+                    onClick={() => setShowOrderDetails(false)}
                     className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <X className="w-6 h-6" />
@@ -476,8 +457,8 @@ const Orders = () => {
                   <div className="space-y-4">
                     {selectedOrder.items.map(item => (
                       <div key={item._id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
-                        <img 
-                          src={item.images?.[0] || 'https://images.pexels.com/photos/441794/pexels-photo-441794.jpeg'} 
+                        <img
+                          src={item.images?.[0] || 'https://images.pexels.com/photos/441794/pexels-photo-441794.jpeg'}
                           alt={item.title}
                           className="w-20 h-20 rounded-lg object-cover"
                         />
@@ -544,8 +525,8 @@ const Orders = () => {
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold text-gray-900">Track Order</h2>
-                  <button 
-                    onClick={() => setShowTrackingModal(false)} 
+                  <button
+                    onClick={() => setShowTrackingModal(false)}
                     className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <X className="w-5 h-5" />

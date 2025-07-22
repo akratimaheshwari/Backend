@@ -6,6 +6,11 @@ const itemSchema = new mongoose.Schema({
     ref: 'Item',
     required: true
   },
+  owner_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   quantity: {
     type: Number,
     required: true

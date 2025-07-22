@@ -1,11 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Trash2, Minus, Plus, Calendar, Package } from 'lucide-react';
 
+
+
 const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
+  const [availabilityMessage, setAvailabilityMessage] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const token = localStorage.getItem('token');
+
+  const getItemId = () => {
+    return item?.item?._id || item?._id || null;
+  };
+
   const handleQuantityChange = (newQty) => {
-    if (newQty > 0) {
-      onQuantityChange(item._id, newQty);
+    if (newQty >= 1) {
+      onQuantityChange(item.cartItemId || item._id, newQty); // ✅ use correct cart subdoc ID
     }
+  };
+
+
+  const checkAvailability = async (startDate, endDate) => {
+    const itemId = getItemId();
+
+    if (!itemId || !startDate || !endDate) return;
+
+    try {
+      setChecking(true);
+      const res = await fetch('/api/items/check-availability', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          item_id: itemId,
+          rental_start_date: startDate,
+          rental_end_date: endDate,
+        }),
+      });
+
+      const data = await res.json();
+      setAvailabilityMessage(data.message);
+    } catch (err) {
+      console.error("❌ Availability Error:", err);
+      setAvailabilityMessage('Error checking availability');
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const handleStartDateChange = (e) => {
+    const date = e.target.value;
+    onDateChange(item._id, 'rental_start_date', date);
+    checkAvailability(date, item.rental_end_date);
+  };
+
+  const handleEndDateChange = (e) => {
+    const date = e.target.value;
+    onDateChange(item._id, 'rental_end_date', date);
+    checkAvailability(item.rental_start_date, date);
   };
 
   const handleInputBlur = (e) => {
@@ -16,6 +69,18 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
       e.target.value = item.quantity.toString();
     }
   };
+
+  const getAutoEndDate = (startDate, rentalType) => {
+    if (!startDate || !rentalType) return '';
+    const start = new Date(startDate);
+    let daysToAdd = 1;
+    if (rentalType === 'per_week') daysToAdd = 7;
+    else if (rentalType === 'per_month') daysToAdd = 30;
+    const end = new Date(start);
+    end.setDate(start.getDate() + daysToAdd);
+    return end.toISOString().split('T')[0];
+  };
+
 
   const calculateRentalDays = () => {
     if (item.rental_start_date && item.rental_end_date) {
@@ -29,7 +94,20 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
   };
 
   const rentalDays = calculateRentalDays();
-  const totalPrice = (item.price || 0) * item.quantity * rentalDays;
+  const unitPrice = item.pricing?.[item.rental_type] || item.price || 0;
+  let durationMultiplier = 1;
+
+  if (item.rental_type === 'per_day') {
+    durationMultiplier = rentalDays;
+  } else if (item.rental_type === 'per_week') {
+    durationMultiplier = Math.ceil(rentalDays / 7);
+  } else if (item.rental_type === 'per_month') {
+    durationMultiplier = Math.ceil(rentalDays / 30);
+  }
+
+  const totalPrice = unitPrice * item.quantity * durationMultiplier;
+
+
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
@@ -59,7 +137,7 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {item.title}
               </h3>
-              
+
               {item.description && (
                 <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                   {item.description}
@@ -80,7 +158,15 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
                     <input
                       type="date"
                       value={item.rental_start_date ? item.rental_start_date.slice(0, 10) : ''}
-                      onChange={(e) => onDateChange(item._id, 'rental_start_date', e.target.value)}
+                      onChange={(e) => {
+                        const startDate = e.target.value;
+                        const autoEndDate = getAutoEndDate(startDate, item.rental_type);
+                        onDateChange(item._id, 'rental_start_date', startDate);
+                        onDateChange(item._id, 'rental_end_date', autoEndDate);
+                        checkAvailability(startDate, autoEndDate);
+                      }}
+
+
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
                       min={new Date().toISOString().split('T')[0]}
                     />
@@ -92,10 +178,10 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
                     <input
                       type="date"
                       value={item.rental_end_date ? item.rental_end_date.slice(0, 10) : ''}
-                      onChange={(e) => onDateChange(item._id, 'rental_end_date', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
-                      min={item.rental_start_date || new Date().toISOString().split('T')[0]}
+                      readOnly
+                      className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-600 cursor-not-allowed"
                     />
+
                   </div>
                 </div>
                 {rentalDays > 1 && (
@@ -104,6 +190,14 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
                   </p>
                 )}
               </div>
+              {availabilityMessage && (
+                <p
+                  className={`text-sm mt-2 ${availabilityMessage.includes('not') ? 'text-red-600' : 'text-green-600'
+                    }`}
+                >
+                  {checking ? 'Checking availability...' : availabilityMessage}
+                </p>
+              )}
 
               {/* Price Information */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -112,7 +206,16 @@ const CartItem = ({ item, onDelete, onQuantityChange, onDateChange }) => {
                     ₹{totalPrice.toLocaleString()}
                   </div>
                   <div className="text-sm text-gray-500">
-                    ₹{item.price || 0}/day × {item.quantity} item{item.quantity > 1 ? 's' : ''} × {rentalDays} day{rentalDays > 1 ? 's' : ''}
+                    ₹{unitPrice}/{item.rental_type?.replace('per_', '') || 'day'} × {item.quantity} item{item.quantity > 1 ? 's' : ''}
+                    {item.rental_type === 'per_day' && (
+                      <> × {rentalDays} day{rentalDays > 1 ? 's' : ''}</>
+                    )}
+                    {item.rental_type === 'per_week' && (
+                      <> × {Math.ceil(rentalDays / 7)} week{Math.ceil(rentalDays / 7) > 1 ? 's' : ''}</>
+                    )}
+                    {item.rental_type === 'per_month' && (
+                      <> × {Math.ceil(rentalDays / 30)} month{Math.ceil(rentalDays / 30) > 1 ? 's' : ''}</>
+                    )}
                   </div>
                 </div>
               </div>

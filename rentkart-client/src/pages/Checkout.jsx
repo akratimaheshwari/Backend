@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Package, Shield, Plus, Minus, X
+  Package, Shield
 } from 'lucide-react';
 import CheckoutNavbar from '../components/CheckoutNavbar';
 import AddressStep from '../components/checkout/AddressStep';
@@ -17,20 +17,20 @@ const Checkout = () => {
   const [savedAddresses, setSavedAddresses] = useState([]);
 
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: '', email: '', phone: '', address: '', city: '', state: '', 
+    fullName: '', email: '', phone: '', address: '', city: '', state: '',
     pincode: '', landmark: '', addressType: 'home', isDefault: false
   });
-  
+
   const [rentalInfo, setRentalInfo] = useState({
-    startDate: '', endDate: '', deliveryTime: '10:00', returnTime: '10:00', 
+    startDate: '', endDate: '', deliveryTime: '10:00', returnTime: '10:00',
     specialInstructions: '', deliveryType: 'standard'
   });
-  
+
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [cardInfo, setCardInfo] = useState({
     cardNumber: '', expiryDate: '', cvv: '', cardholderName: ''
   });
-  
+
   const [upiInfo, setUpiInfo] = useState({ upiId: '' });
   const [walletInfo, setWalletInfo] = useState({ walletType: 'paytm' });
   const [errors, setErrors] = useState({});
@@ -40,9 +40,9 @@ const Checkout = () => {
   const [orderDetails, setOrderDetails] = useState(null);
 
   useEffect(() => {
-  fetchCart();
-  fetchSavedAddresses();
-}, []);
+    fetchCart();
+    fetchSavedAddresses();
+  }, []);
 
 
   const fetchCart = async () => {
@@ -58,26 +58,36 @@ const Checkout = () => {
     }
   };
 
-  const calculateRentalDays = () => {
-    if (!rentalInfo.startDate || !rentalInfo.endDate) return 1;
-    const start = new Date(rentalInfo.startDate);
-    const end = new Date(rentalInfo.endDate);
+  const calculateRentalDays = (startDate, endDate) => {
+    if (!startDate || !endDate) return 1;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.max(1, diffDays);
   };
+  const getUnitPricePerDay = (item) => {
+    if (item.rental_type === 'per_week') return item.price / 7;
+    if (item.rental_type === 'per_month') return item.price / 30;
+    return item.price; // assume per_day or fallback
+  };
+
 
   const calculateSubtotal = () => {
     return cartItems.reduce((acc, item) => {
-      const days = calculateRentalDays();
-      return acc + (item.pricing?.per_day || 0) * item.quantity * days;
+      const days = calculateRentalDays(item.rental_start_date, item.rental_end_date);
+      const perDayPrice = getUnitPricePerDay(item);
+      return acc + perDayPrice * item.quantity * days;
     }, 0);
   };
+
+
+
 
   const calculateTax = (subtotal) => Math.round(subtotal * 0.18);
   const calculateDeliveryFee = () => rentalInfo.deliveryType === 'express' ? 199 : 99;
   const calculateSecurityDeposit = (subtotal) => Math.round(subtotal * 0.2);
-  
+
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
     return subtotal + calculateTax(subtotal) + calculateDeliveryFee() + calculateSecurityDeposit(subtotal);
@@ -85,18 +95,20 @@ const Checkout = () => {
 
   const validateStep = () => {
     const newErrors = {};
-    
+
     if (currentStep === 1) {
       if (!selectedAddressId) {
         newErrors.address = 'Please select or add a delivery address';
       }
-    } else if (currentStep === 2) {
-      if (!rentalInfo.startDate) newErrors.startDate = 'Start date required';
-      if (!rentalInfo.endDate) newErrors.endDate = 'End date required';
-      if (new Date(rentalInfo.startDate) >= new Date(rentalInfo.endDate)) {
-        newErrors.endDate = 'End date must be after start date';
-      }
-    } else if (currentStep === 3) {
+    }
+    // } else if (currentStep === 2) {
+    //   if (!rentalInfo.startDate) newErrors.startDate = 'Start date required';
+    //   if (!rentalInfo.endDate) newErrors.endDate = 'End date required';
+    //   if (new Date(rentalInfo.startDate) >= new Date(rentalInfo.endDate)) {
+    //     newErrors.endDate = 'End date must be after start date';
+    //   }
+    // } 
+    else if (currentStep === 3) {
       if (paymentMethod === 'card') {
         if (!cardInfo.cardNumber) newErrors.cardNumber = 'Card number required';
         if (!cardInfo.expiryDate) newErrors.expiryDate = 'Expiry date required';
@@ -106,7 +118,7 @@ const Checkout = () => {
         if (!upiInfo.upiId) newErrors.upiId = 'UPI ID required';
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -117,97 +129,103 @@ const Checkout = () => {
     }
   };
   const handlePrevStep = () => {
-  if (currentStep > 1) {
-    setCurrentStep(prev => prev - 1);
-  }
-};
-const fetchSavedAddresses = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/addresses/', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      setSavedAddresses(data);
-    } else {
-      console.warn('Unexpected address response:', data);
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
     }
-  } catch (err) {
-    console.error('Error fetching addresses:', err);
-  }
-};
+  };
+  const fetchSavedAddresses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/addresses/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setSavedAddresses(data);
+      } else {
+        console.warn('Unexpected address response:', data);
+      }
+    } catch (err) {
+      console.error('Error fetching addresses:', err);
+    }
+  };
 
 
   const handlePlaceOrder = async () => {
-  if (!validateStep()) return;
+    if (!validateStep()) return;
 
-  setProcessing(true);
-  try {
-    const token = localStorage.getItem('token');
+    setProcessing(true);
+    try {
+      const token = localStorage.getItem('token');
 
-    const selectedAddress = savedAddresses.find(addr => addr._id === selectedAddressId);
-    const user = JSON.parse(localStorage.getItem('user'));
+      const selectedAddress = savedAddresses.find(addr => addr._id === selectedAddressId);
+      const user = JSON.parse(localStorage.getItem('user'));
 
-    // ✅ Prevent self-rental
-    // const selfOwnedItem = cartItems.find(item => item.owner_id === user._id);
-    // if (selfOwnedItem) {
-    //   alert(`❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from cart.`);
-    //   setProcessing(false);
-    //   return;
-    // }
-    const orderData = {
-      items: cartItems.map(item => ({
-        item_id: item._id,
-        quantity: item.quantity,
-        rentalPeriod: 'day',
-        startDate: rentalInfo.startDate,
-        endDate: rentalInfo.endDate
-      })),
-      shippingAddress: selectedAddress,
-      totalAmount: calculateTotal(),
-       paymentMethod: paymentMethod.toUpperCase()
+      // ✅ Prevent self-rental
+      // const selfOwnedItem = cartItems.find(item => item.owner_id === user._id);
+      // if (selfOwnedItem) {
+      //   alert(`❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from cart.`);
+      //   setProcessing(false);
+      //   return;
+      // }
+      const orderData = {
+        items: cartItems.map(item => ({
+          item_id: item.item_id,
+          // owner_id: item.owner_id,
+          quantity: item.quantity,
+          rentalPeriod: 'day',
+          startDate: rentalInfo.startDate,
+          endDate: rentalInfo.endDate
+        })),
+        shippingAddress: selectedAddress,
+        totalAmount: calculateTotal(),
+        paymentMethod: paymentMethod.toUpperCase()
 
-    };
+      };
+      console.log("🛒 Sending order items:", cartItems.map(item => ({
+        item_id: item.item_id,
+        quantity: item.quantity
+      })));
 
-    const res = await fetch('/api/orders/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(orderData)
-    });
 
-    if (res.ok) {
-      const result = await res.json();
-      setOrderId(result.order._id);
-      setOrderDetails({
-        itemCount: cartItems.length,
-        startDate: rentalInfo.startDate,
-        endDate: rentalInfo.endDate,
-        deliveryAddress: `${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`,
-        paymentMethod: paymentMethod.toUpperCase(),
-        total: calculateTotal()
+      const res = await fetch('/api/orders/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(orderData)
       });
-      setOrderConfirmed(true);
-      setCurrentStep(4);
 
-      await fetch('/api/users/cart/clear', {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } else {
-      const error = await res.json();
-      alert(error.message || 'Failed to place order');
+      if (res.ok) {
+        const result = await res.json();
+        setOrderId(result.order._id);
+        setOrderDetails({
+          itemCount: cartItems.length,
+          startDate: rentalInfo.startDate,
+          endDate: rentalInfo.endDate,
+          deliveryAddress: `${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`,
+          paymentMethod: paymentMethod.toUpperCase(),
+          total: calculateTotal()
+        });
+        setOrderConfirmed(true);
+        setCurrentStep(4);
+
+        await fetch('/api/users/cart/clear', {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        const error = await res.json();
+        alert(error.message || 'Failed to place order');
+      }
+    } catch (err) {
+      console.error('Error placing order:', err);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setProcessing(false);
     }
-  } catch (err) {
-    console.error('Error placing order:', err);
-    alert('Something went wrong. Please try again.');
-  } finally {
-    setProcessing(false);
-  }
-};
+  };
 
 
   const updateQuantity = async (itemId, newQty) => {
@@ -222,7 +240,7 @@ const fetchSavedAddresses = async () => {
         },
         body: JSON.stringify({ quantity: newQty })
       });
-      setCartItems(prev => prev.map(item => 
+      setCartItems(prev => prev.map(item =>
         item._id === itemId ? { ...item, quantity: newQty } : item
       ));
     } catch (err) {
@@ -264,7 +282,7 @@ const fetchSavedAddresses = async () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       <CheckoutNavbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Progress Steps */}
         <div className="mb-8">
@@ -272,20 +290,18 @@ const fetchSavedAddresses = async () => {
             {steps.map((step, index) => {
               const isActive = currentStep >= step.number;
               const isCurrent = currentStep === step.number;
-              
+
               return (
                 <div key={step.number} className="flex items-center">
-                  <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all ${
-                    isActive 
-                      ? 'bg-neutral-900 border-neutral-900 text-white' 
-                      : 'border-neutral-300 text-neutral-400'
-                  }`}>
+                  <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all ${isActive
+                    ? 'bg-neutral-900 border-neutral-900 text-white'
+                    : 'border-neutral-300 text-neutral-400'
+                    }`}>
                     <span className="font-medium">{step.number}</span>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`w-20 h-0.5 mx-2 transition-all ${
-                      currentStep > step.number ? 'bg-neutral-900' : 'bg-neutral-300'
-                    }`}></div>
+                    <div className={`w-20 h-0.5 mx-2 transition-all ${currentStep > step.number ? 'bg-neutral-900' : 'bg-neutral-300'
+                      }`}></div>
                   )}
                 </div>
               );
@@ -312,13 +328,36 @@ const fetchSavedAddresses = async () => {
             )}
 
             {currentStep === 2 && (
-              <RentalStep
-                rentalInfo={rentalInfo}
-                setRentalInfo={setRentalInfo}
-                errors={errors}
-                calculateRentalDays={calculateRentalDays}
-              />
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-4">Rental Details (Read Only)</h3>
+                {cartItems.length === 0 ? (
+                  <p className="text-neutral-600">No items in cart</p>) : (
+                  <div className="space-y-4">
+                    {cartItems.map(item => (
+                      <div key={item._id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className="font-medium text-neutral-900">{item.title}</h4>
+                            <p className="text-sm text-neutral-600">
+                              Start: <strong>{item.rental_start_date?.slice(0, 10)}</strong> <br />
+                              End: <strong>{item.rental_end_date?.slice(0, 10)}</strong> <br />
+                              Duration:{' '}
+                              <strong>{calculateRentalDays(item.rental_start_date, item.rental_end_date)} day(s)</strong>
+                            </p>
+                          </div>
+                          <img
+                            src={item.images?.[0]}
+                            alt={item.title}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
+
 
             {currentStep === 3 && (
               <PaymentStep
@@ -339,27 +378,45 @@ const fetchSavedAddresses = async () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 sticky top-8">
               <h3 className="text-lg font-semibold text-neutral-900 mb-4">Order Summary</h3>
-              
+
               {/* Cart Items */}
               <div className="space-y-4 mb-6">
                 {cartItems.map(item => (
                   <div key={item._id} className="flex items-center gap-3">
                     <img
-                      src={item.images?.[0] || 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=100'}
+                      src={item.image || 'https://via.placeholder.com/300x200'}
                       alt={item.title}
                       className="w-12 h-12 rounded-lg object-cover"
                     />
+
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-neutral-900 text-sm truncate">{item.title}</p>
                       <p className="text-neutral-600 text-xs">Qty: {item.quantity}</p>
+                      <p className="text-neutral-600 text-xs">
+                        {item.rental_start_date?.slice(0, 10)} to {item.rental_end_date?.slice(0, 10)}
+                      </p>
+                      <p className="text-neutral-500 text-xs">
+                        Duration: {calculateRentalDays(item.rental_start_date, item.rental_end_date)} day(s)
+                      </p>
+
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-neutral-900 text-sm">
-                        ₹{((item.pricing?.per_day || 0) * item.quantity * calculateRentalDays()).toLocaleString()}
+                        ₹{(getUnitPricePerDay(item) * item.quantity * calculateRentalDays(item.rental_start_date, item.rental_end_date)).toLocaleString()}
                       </p>
+
                       <p className="text-neutral-500 text-xs">
-                        ₹{item.pricing?.per_day || 0}/day
+                        ₹{item.price}/{
+                          item.rental_type === 'per_day'
+                            ? 'day'
+                            : item.rental_type === 'per_week'
+                              ? 'week'
+                              : item.rental_type === 'per_month'
+                                ? 'month'
+                                : ''
+                        }
                       </p>
+
                     </div>
                   </div>
                 ))}
@@ -372,7 +429,7 @@ const fetchSavedAddresses = async () => {
                   <span>₹{calculateSubtotal().toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
-                  <span>Tax (18%)</span>
+                  <span>Tax (10%)</span>
                   <span>₹{calculateTax(calculateSubtotal()).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
@@ -412,7 +469,7 @@ const fetchSavedAddresses = async () => {
           >
             Previous
           </button>
-          
+
           {currentStep < 3 ? (
             <button
               onClick={handleNextStep}
@@ -445,5 +502,7 @@ const fetchSavedAddresses = async () => {
   );
 };
 
+
 export default Checkout;
+
 

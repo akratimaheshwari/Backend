@@ -1,5 +1,5 @@
 import express from 'express';
-import { createItem, getItems,updateItem,deleteItem ,getItemsByOwner,getFeaturedItems} from '../controllers/itemController.js';
+import { createItem, getItems,updateItem,deleteItem ,getItemsByOwner,getFeaturedItems,checkItemAvailability} from '../controllers/itemController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import upload from '../middleware/upload.js'; 
 import Category from "../models/category.js";
@@ -58,6 +58,9 @@ router.get('/category/:slug', async (req, res) => {
   }
 });
 
+
+
+router.post('/check-availability', verifyToken, checkItemAvailability);
 
 
 export default router;

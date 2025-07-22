@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Filter, Grid, List, SlidersHorizontal, MapPin, Star } from 'lucide-react';
 import ItemCard from '../components/ItemCard';
-// import Navbar from '../components/Navbar';
+import Header from '../components/Header';
+
 const ItemPage = () => {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
@@ -12,17 +13,28 @@ const ItemPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [location, setLocation] = useState("");
+  const [debouncedLocation, setDebouncedLocation] = useState(location);
+  const isLoggedIn = !!localStorage.getItem('token');
 
+  // Debounce location input by 500ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedLocation(location);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [location]);
 
-
-
-  const fetchItems = async (slug = '') => {
+  // Fetch items when debounced location changes
+  const fetchItems = async () => {
     try {
       setLoading(true);
       let url = '/api/items';
-      if (slug && slug !== 'all') {
-        url = `/api/items/category/${slug}`;
-      }
+
+      const params = new URLSearchParams();
+      if (debouncedLocation) params.append('location', debouncedLocation);
+      if (params.toString()) url += `?${params.toString()}`;
+
       const res = await fetch(url);
       const data = await res.json();
       setItems(data);
@@ -33,24 +45,26 @@ const ItemPage = () => {
     }
   };
 
-
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [debouncedLocation]);
 
   useEffect(() => {
-      const fetchCategories = async () => {
-        try {
-          const res = await fetch('/api/categories');
-          const data = await res.json();
-          if (Array.isArray(data)) setCategories(data);
-        } catch (err) {
-          console.error('Failed to fetch categories:', err);
-        }
-      };
-  
-      fetchCategories();
-    }, []);
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        console.log("Fetched categories:", data); // 🔍 Check this in browser console
+        if (Array.isArray(data)) setCategories(data);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+
   const handleLike = async (id) => {
     try {
       await fetch(`/api/items/${id}/like`, {
@@ -82,7 +96,6 @@ const ItemPage = () => {
       });
 
       if (res.ok) {
-        // Show success notification
         alert('Item added to cart successfully!');
       }
     } catch (err) {
@@ -97,14 +110,14 @@ const ItemPage = () => {
         item.description?.toLowerCase().includes(search.toLowerCase());
 
       const matchesCategory =
-        filterCategory === 'all' || item.category?.slug === filterCategory;
+        filterCategory === 'all' || item.category?._id === filterCategory;
+
 
       const price = item.pricing?.per_day || item.price || 0;
       const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
 
       return matchesSearch && matchesCategory && matchesPrice;
     })
-
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
@@ -143,70 +156,47 @@ const ItemPage = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <div className="bg-white border-b border-neutral-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-neutral-900">Discover Rentals</h1>
-                <p className="text-neutral-600 mt-1">
-                  {filteredAndSortedItems.length} items available for rent
-                </p>
-              </div>
+      {/* Header at top */}
 
-              {/* Search Bar */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search items..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"></div>
+      <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-neutral-900">Filters</h3>
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="lg:hidden flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Filters
+                </button>
 
+              </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <div className="lg:w-64 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 sticky top-32">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-900">Filters</h3>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden p-2 hover:bg-neutral-100 rounded-lg"
-                >
-                  <SlidersHorizontal className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 sticky top-24 max-h-[80vh] overflow-y-auto">
 
-              <div className={`space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+              
+
+              <div className={`space-y-6 ${showFilters ? 'block' : 'hidden'} lg:block`}>
+
                 {/* Categories */}
                 <div>
-                  <h4 className="font-medium text-neutral-900 mb-3">Categories</h4>
-                  <div className="space-y-2">
-                    {categories.length > 0 ? (
-                      categories.map(category => (
-                        <button
-                          key={category.slug}
-                          onClick={() => setFilterCategory(category.slug)}
-                          className={`...`}>
-                          {category.name}
-                        </button>
-                      ))
-                    ) : (
-                      <p className="text-neutral-500">No categories found.</p>
-                    )}
-
-                  </div>
+                  <h4 className="font-medium text-neutral-900 mb-3">Category</h4>
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="w-full p-2 border border-neutral-200 rounded-lg text-sm"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map(category => (
+                      <option key={category._id} value={category._id}>
+                        {category.title}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
                 {/* Price Range */}
                 <div>
                   <h4 className="font-medium text-neutral-900 mb-3">Price Range (per day)</h4>
@@ -314,10 +304,11 @@ const ItemPage = () => {
                 </button>
               </div>
             ) : (
-              <div className={`grid gap-6 ${viewMode === 'grid'
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
                 : 'grid-cols-1'
                 }`}>
+
                 {filteredAndSortedItems.map(item => (
                   <ItemCard
                     key={item._id}
