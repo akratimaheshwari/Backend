@@ -89,10 +89,21 @@ export const Header = ({ location, setLocation }) => {
             )}
           </nav>
 
-          {/* Mobile Toggle */}
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-gray-600">
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Actions */}
+          <div className="flex items-center space-x-2 md:hidden">
+            <button 
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)} 
+              className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Location */}
@@ -106,6 +117,34 @@ export const Header = ({ location, setLocation }) => {
             className="pl-2 pr-3 py-2 border border-gray-300 rounded-xl text-sm w-full"
           />
         </div>
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 py-4">
+            <nav className="space-y-3">
+              <a href="/home" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Home</a>
+              <a href="/items" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Browse Items</a>
+              <a href="/cart" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
+                <ShoppingCart className="w-5 h-5" />
+                <span>Cart</span>
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+              </a>
+              <a href="/orders" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
+                <ClipboardList className="w-5 h-5" />
+                <span>Orders</span>
+              </a>
+              {isLoggedIn ? (
+                <a href="/dashboard" className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                  <UserCircle className="w-5 h-5" />
+                  <span>Dashboard</span>
+                </a>
+              ) : (
+                <a href="/signup" className="block bg-gray-800 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors">
+                  Join Now
+                </a>
+              )}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );
