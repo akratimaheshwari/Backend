@@ -159,7 +159,6 @@ const ItemPage = () => {
       {/* Header at top */}
 
       <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"></div>
       <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-neutral-900">Filters</h3>
                 <button
