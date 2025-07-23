@@ -13,7 +13,7 @@ router.get('/', getItems);
 // GET /api/items/owner
 router.get('/owner', verifyToken, async (req, res) => {
   try {
-    const items = await Item.find({ owner_id: req.user._id }).populate('category');
+    const items = await Item.find({ owner: req.user._id }).populate('category');
     res.status(200).json(items);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch user listings' });

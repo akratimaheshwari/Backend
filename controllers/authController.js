@@ -32,11 +32,16 @@ export const loginUser = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin
-      }
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    address: user.address,
+    avatar: user.avatar,
+    verified: user.verified,
+    isAdmin: user.isAdmin,
+    joinDate: user.createdAt
+  }
     });
   } catch (err) {
     // console.error("❌ Error:", err.message);

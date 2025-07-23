@@ -27,17 +27,24 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user')) || {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main St, New York, NY 10001',
-      avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-      joinDate: '2024-01-15',
-      verified: true
-    };
-    setUser(storedUser);
-  }, []);
+  const stored = localStorage.getItem('user');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+
+      // ✅ If at least name exists, set as user
+      if (parsed.name) {
+        setUser(parsed);
+      } else {
+        console.warn('User data incomplete:', parsed);
+      }
+    } catch (err) {
+      console.error('Failed to parse user:', err);
+    }
+  }
+}, []);
+
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -173,7 +180,7 @@ const UserDashboard = () => {
               <Mail className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Email</p>
-                <p className="text-sm font-medium text-gray-800">{user.email}</p>
+                <p className="text-sm font-medium text-gray-800">{user.email ?? 'john.doe@example.com'}</p>
               </div>
             </div>
             

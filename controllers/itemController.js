@@ -95,7 +95,7 @@ export const getItemsByOwner = async (req, res) => {
   try {
     const ownerId = req.user.id || req.user._id;
     const items = await Item.find({ owner: ownerId });
-    res.status(200).json({ items });
+    res.status(200).json(items); // ✅ Send array directly
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch items' });
   }
