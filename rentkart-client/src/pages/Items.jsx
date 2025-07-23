@@ -159,20 +159,23 @@ const ItemPage = () => {
       {/* Header at top */}
 
       <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"></div>
-      <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-900">Filters</h3>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900"
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Filters
-                </button>
 
-              </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+    {/* All main content is inside this container */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      {/* Filters Toggle on Mobile */}
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-neutral-900">Filters</h3>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="lg:hidden flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Filters
+        </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <div className="lg:w-64 flex-shrink-0">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 sticky top-24 max-h-[80vh] overflow-y-auto">
