@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import RenterDashboard from '../components/RenterDashboard';
 import OwnerDashboard from '../components/OwnerDashboard';
 import { useNavigate } from 'react-router-dom';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  LogOut, 
-  Settings, 
-  Bell, 
+import { Link } from 'react-router-dom';
+
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  LogOut,
+  Settings,
+  Bell,
   Heart,
   Package,
   Calendar,
@@ -27,22 +29,26 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const stored = localStorage.getItem('user');
-  if (stored) {
+  const fetchUser = async () => {
     try {
-      const parsed = JSON.parse(stored);
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      // ✅ If at least name exists, set as user
-      if (parsed.name) {
-        setUser(parsed);
-      } else {
-        console.warn('User data incomplete:', parsed);
-      }
+      const data = await res.json();
+      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data)); // Keep localStorage in sync (optional)
     } catch (err) {
-      console.error('Failed to parse user:', err);
+      console.error('Failed to fetch user:', err);
     }
-  }
+  };
+
+  fetchUser();
 }, []);
+
 
 
 
@@ -92,6 +98,7 @@ const UserDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-800">
                 RentKart
               </h1>
+
             </div>
 
             {/* User Profile Section */}
@@ -100,7 +107,14 @@ const UserDashboard = () => {
                 <Bell className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
               </button>
-              
+              <Link
+                to="/"
+                className="text-gray-800 hover:text-gray-800 font-medium text-sm sm:text-base"
+              >
+                Home
+              </Link>
+
+
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -174,7 +188,7 @@ const UserDashboard = () => {
               Edit Profile
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
               <Mail className="w-5 h-5 text-gray-500" />
@@ -183,7 +197,7 @@ const UserDashboard = () => {
                 <p className="text-sm font-medium text-gray-800">{user.email ?? 'john.doe@example.com'}</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
               <Phone className="w-5 h-5 text-gray-500" />
               <div>
@@ -191,7 +205,7 @@ const UserDashboard = () => {
                 <p className="text-sm font-medium text-gray-800">{user.phone}</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
               <MapPin className="w-5 h-5 text-gray-500" />
               <div>
@@ -207,21 +221,19 @@ const UserDashboard = () => {
           <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-200">
             <button
               onClick={() => setActiveTab('renter')}
-              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
-                activeTab === 'renter'
+              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'renter'
                   ? 'bg-gray-800 text-white shadow-lg'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`}
+                }`}
             >
               🏠 Renter Dashboard
             </button>
             <button
               onClick={() => setActiveTab('owner')}
-              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
-                activeTab === 'owner'
+              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'owner'
                   ? 'bg-gray-700 text-white shadow-lg'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`}
+                }`}
             >
               🏢 Owner Dashboard
             </button>

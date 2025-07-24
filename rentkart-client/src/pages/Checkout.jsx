@@ -15,6 +15,8 @@ const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [savedAddresses, setSavedAddresses] = useState([]);
+  const [isSelfOwnedItem, setIsSelfOwnedItem] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [shippingInfo, setShippingInfo] = useState({
     fullName: '', email: '', phone: '', address: '', city: '', state: '',
@@ -52,11 +54,35 @@ const Checkout = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      setCartItems(Array.isArray(data) ? data : []);
+      const userString = localStorage.getItem('user');
+      if (!userString) {
+        console.warn('⚠️ No user found in localStorage');
+        return;
+      }
+      const user = JSON.parse(userString);
+      setCurrentUser(user); // ✅ Set it to state
+
+      const currentUser = JSON.parse(userString);
+
+
+      const cartArray = Array.isArray(data) ? data : [];
+      console.log('🛒 Cart Items:', cartArray);
+      console.log('👤 Current User:', currentUser?.id);
+
+      setCartItems(cartArray);
+
+      // 👇 Check if any item is owned by current user
+      const selfItem = cartArray.find(item =>
+        String(item.owner_id) === String(currentUser._id)
+      );
+
+
+      setIsSelfOwnedItem(!!selfItem);
     } catch (err) {
       console.error('Error fetching cart:', err);
     }
   };
+
 
   const calculateRentalDays = (startDate, endDate) => {
     if (!startDate || !endDate) return 1;
@@ -157,36 +183,36 @@ const Checkout = () => {
     setProcessing(true);
     try {
       const token = localStorage.getItem('token');
-
-      const selectedAddress = savedAddresses.find(addr => addr._id === selectedAddressId);
       const user = JSON.parse(localStorage.getItem('user'));
+      const selectedAddress = savedAddresses.find(addr => addr._id === selectedAddressId);
 
-      // ✅ Prevent self-rental
-      // const selfOwnedItem = cartItems.find(item => item.owner_id === user._id);
-      // if (selfOwnedItem) {
-      //   alert(`❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from cart.`);
-      //   setProcessing(false);
-      //   return;
-      // }
+      // 🔍 Prevent renting own item
+      // 🔍 Prevent renting own item
+      const selfOwnedItem = cartItems.find(item =>
+      String(item.owner_id) === String(currentUser?.id)
+  );
+
+      if (selfOwnedItem) {
+        alert(`❌ You cannot rent your own item: "${selfOwnedItem.title}". Please remove it from the cart to proceed.`);
+        setProcessing(false);
+        return;
+      }
+
+
       const orderData = {
         items: cartItems.map(item => ({
-          item_id: item.item_id,
-          // owner_id: item.owner_id,
+          item_id: item.item_id || item._id,  // ✅ Ensure correct item id
           quantity: item.quantity,
           rentalPeriod: 'day',
-          startDate: rentalInfo.startDate,
-          endDate: rentalInfo.endDate
+          startDate: item.rental_start_date,
+          endDate: item.rental_end_date
         })),
         shippingAddress: selectedAddress,
         totalAmount: calculateTotal(),
         paymentMethod: paymentMethod.toUpperCase()
-
       };
-      console.log("🛒 Sending order items:", cartItems.map(item => ({
-        item_id: item.item_id,
-        quantity: item.quantity
-      })));
 
+      console.table(orderData.items);  // 🛠️ Debug log
 
       const res = await fetch('/api/orders/checkout', {
         method: 'POST',
@@ -226,6 +252,7 @@ const Checkout = () => {
       setProcessing(false);
     }
   };
+
 
 
   const updateQuantity = async (itemId, newQty) => {
@@ -312,6 +339,12 @@ const Checkout = () => {
               {steps[currentStep - 1]?.title}
             </h2>
           </div>
+          {isSelfOwnedItem && (
+            <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-6 text-sm max-w-3xl mx-auto">
+              ⚠️ You cannot place an order containing your own item. Please remove it from the cart to proceed.
+            </div>
+          )}
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -480,8 +513,9 @@ const Checkout = () => {
           ) : (
             <button
               onClick={handlePlaceOrder}
-              disabled={processing}
-              className="px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              disabled={processing || isSelfOwnedItem}
+              className={`px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 
+    disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2`}
             >
               {processing ? (
                 <>
@@ -491,10 +525,11 @@ const Checkout = () => {
               ) : (
                 <>
                   <Package className="w-4 h-4" />
-                  Place Order
+                  {isSelfOwnedItem ? "Cannot Place Order" : "Place Order"}
                 </>
               )}
             </button>
+
           )}
         </div>
       </div>

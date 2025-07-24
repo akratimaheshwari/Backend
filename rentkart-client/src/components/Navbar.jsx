@@ -57,7 +57,7 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Home', href: '/home', icon: Home },
+    { name: 'Home', href: '/', icon: Home },
     { name: 'My Listings', href: '/my-listings', icon: List },
     { name: 'Favorites', href: '/wishlist', icon: Heart },
     { name: 'Messages', href: '/messages', icon: MessageCircle },

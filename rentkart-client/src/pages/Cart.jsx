@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShoppingCart, ArrowLeft, CreditCard,Trash2, Calendar } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CreditCard,Trash2, Calendar,Package } from 'lucide-react';
 import CartItem from '../components/CartItem';
 import { useNavigate } from 'react-router-dom';
 
@@ -105,7 +105,7 @@ const Cart = () => {
             <div className="flex justify-between items-center h-16">
               <h1 className="text-2xl font-bold text-neutral-900">RentKart</h1>
               <nav>
-                <a href="/home" className="text-neutral-600 hover:text-neutral-900 font-medium transition-colors">
+                <a href="/" className="text-neutral-600 hover:text-neutral-900 font-medium transition-colors">
                   Home
                 </a>
               </nav>
@@ -123,21 +123,25 @@ const Cart = () => {
     <div className="min-h-screen bg-neutral-50">
       {/* Header */}
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-neutral-900">RentKart</h1>
-            <nav>
-              <a
-                href="/home"
-                className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Home
-              </a>
-            </nav>
-          </div>
-        </div>
-      </header>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <div className="flex items-center space-x-2">
+      <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
+        <Package className="w-6 h-6 text-white" />
+      </div>
+      <h1 className="text-2xl font-bold text-neutral-800">RentKart</h1>
+    </div>
+    <nav>
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Home
+      </a>
+    </nav>
+  </div>
+</header>
+
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -163,7 +167,7 @@ const Cart = () => {
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Your cart is empty</h3>
             <p className="text-neutral-600 mb-6">Start browsing our products to add items to your cart</p>
             <a
-              href="/home"
+              href="/"
               className="inline-flex items-center gap-2 bg-neutral-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-neutral-800 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -203,7 +207,7 @@ const Cart = () => {
                   <div className="border-t border-neutral-200 pt-3">
                     <div className="flex justify-between text-lg font-semibold text-neutral-900">
                       <span>Total</span>
-                      <span>₹{total.toLocaleString()}</span>
+                      <span>₹{(total + 20).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>

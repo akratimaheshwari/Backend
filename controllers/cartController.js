@@ -1,9 +1,10 @@
 import User from '../models/user.js';
+import mongoose from 'mongoose';
 
 export const getCart = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('cart.item_id', 'title images pricing owner_id');
+      .populate('cart.item_id', 'title images pricing owner');
 
     if (!user) return res.status(404).json({ message: 'User not found' });
     user.cart = user.cart.filter(entry => entry.item_id);
@@ -22,7 +23,8 @@ export const getCart = async (req, res) => {
           rental_type: entry.rental_type,
           rental_start_date: entry.rental_start_date,
           rental_end_date: entry.rental_end_date,
-          quantity: entry.quantity
+          quantity: entry.quantity,
+          owner_id: item.owner
         };
       });
 
@@ -34,25 +36,37 @@ export const getCart = async (req, res) => {
 };
 export const addToCart = async (req, res) => {
   const { item_id, quantity, rental_type, rental_start_date, rental_end_date } = req.body;
+  console.log('➡️ Add to Cart Request:', {
+    user: req.user?._id,
+    item_id,
+    quantity,
+    rental_type,
+    rental_start_date,
+    rental_end_date,
+  });
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     // ✅ Check if item already exists in cart with same rental type & dates
+    const objectId = new mongoose.Types.ObjectId(item_id);
     const existingItem = user.cart.find(entry =>
-      entry.item_id.toString() === item_id 
+      entry.item_id.toString() === objectId.toString() 
     );
     if (existingItem) {
       // ✅ Increase quantity
       existingItem.quantity += quantity;
     } else {
-    user.cart.push({ item_id, quantity, rental_type, rental_start_date, rental_end_date });
+    user.cart.push({ item_id: objectId,
+       quantity, rental_type, rental_start_date, rental_end_date });
     }
     await user.save();
     res.status(201).json({ message: 'Item added to cart', cart: user.cart });
   } catch (err) {
+    console.error("❌ Error in addToCart:", err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 export const removeFromCart = async (req, res) => {
   const { itemId } = req.params;
   try {

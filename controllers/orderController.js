@@ -89,10 +89,7 @@ import Item from '../models/item.js';
 
 export const checkout = async (req, res) => {
   try {
-    const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
-
-   
-
+    const { items, totalAmount, shippingAddress, paymentMethod } = req.body; 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'No items provided' });
     }
@@ -104,10 +101,13 @@ export const checkout = async (req, res) => {
   items.map(async (item) => {
     const itemDoc = await Item.findById(item.item_id).lean();  // ✅ Define itemDoc here
       if (!itemDoc) throw new Error(`Item not found for ID ${item.item_id}`);
+      if (itemDoc.owner.toString() === req.user._id.toString()) {
+      throw new Error(`You cannot rent your own item: ${itemDoc.title}`);
+    }
 
     return {
       item_id: item.item_id,
-      owner_id: itemDoc.owner_id, // ✅ Include required owner_id
+      owner_id: itemDoc.owner, // ✅ Include required owner_id
       quantity: item.quantity,
       rentalPeriod: item.rentalPeriod,
       startDate: item.startDate,
@@ -149,6 +149,8 @@ export const markAsDelivered = async (req, res) => {
 
 // PATCH /api/orders/:orderId/return
 export const markAsReturned = async (req, res) => {
+  console.log('PATCH /:orderId/status called with:', req.params.orderId, req.body.status);
+
   try {
     const order = await Order.findByIdAndUpdate(
       req.params.orderId,
@@ -172,6 +174,7 @@ export const updateOrderStatus = async (req, res) => {
 
     const order = await Order.findById(orderId);
     if (!order) {
+      console.log('Order not found:', orderId);
       return res.status(404).json({ message: 'Order not found' });
     }
 

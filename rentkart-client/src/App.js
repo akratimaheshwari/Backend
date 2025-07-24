@@ -67,23 +67,24 @@ import ChangePassword from "./pages/ChangePassword";
 import OwnerOrders from "./pages/OwnerOrders";
 import Wishlist from './pages/Wishlist';
 import Footer from './components/Footer';
-
+import HowItWorks from './pages/HowItWorks';
+import AboutUs from './pages/AboutUs';
 function AppRoutes() {
   const location = useLocation();
 
   // 👇 Hide footer only on login and signup pages
-  const hideFooter = location.pathname === '/' || location.pathname === '/signup'|| location.pathname ==='/home'||
+  const hideFooter = location.pathname === '/login' || location.pathname === '/signup'|| location.pathname ==='/'||
   location.pathname === '/profile';
 
   return (
     <>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/dashboard" element={<UserDashboard />} /> 
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<UserDashboard />} />  
         <Route path="/orders" element={<Orders />} />
-        <Route path="/owner-orders" element={<OwnerOrders />} />
+        <Route path="/owner-order" element={<OwnerOrders />} />
         <Route path="/items" element={<Items />} />
         <Route path="/category/:slug" element={<CategoryItems />} />
         <Route path="/items/:id" element={<ItemsDetails />} />
@@ -94,6 +95,8 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/about-us" element={<AboutUs/>} />
       </Routes>
 
       {/* 👇 Show footer only if not login or signup */}

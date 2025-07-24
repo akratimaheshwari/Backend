@@ -8,6 +8,8 @@ import {
   Footer
 } from '../components/HomeLayout';
 
+
+
 const Home = () => {
   const [featuredItems, setFeaturedItems] = useState([]);
   const [categories, setCategories] = useState([]);

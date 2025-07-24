@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle,ArrowLeft  } from 'lucide-react';
+
 
 const AddItem = () => {
   const navigate = useNavigate();
@@ -161,6 +162,14 @@ const AddItem = () => {
 
   return (
     <div className="min-h-screen bg-white py-10 px-4 max-w-3xl mx-auto">
+       <button
+      onClick={() => navigate(-1)}
+      className="absolute top-6 left-6 flex items-center text-sm text-gray-600 hover:underline z-10"
+    >
+      <ArrowLeft className="w-4 h-4 mr-1" />
+      Back
+    </button>
+    {/* <div className="py-10 px-4 max-w-3xl mx-auto"></div> */}
       <h1 className="text-3xl font-bold mb-6">Add New Rental Item</h1>
 
       {error && <div className="text-red-600 mb-4 flex items-center"><AlertCircle className="w-4 h-4 mr-2" /> {error}</div>}
@@ -214,6 +223,7 @@ const AddItem = () => {
             ))}
           </div>
         </div>
+
 
         <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
           {loading ? 'Uploading...' : 'Add Item'}

@@ -33,7 +33,9 @@ import { toast } from 'react-hot-toast';
 
 export const Header = ({ location, setLocation }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
+
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
@@ -73,7 +75,7 @@ export const Header = ({ location, setLocation }) => {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/home" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
+            <Link to="/" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
             <Link to="/items" className="text-gray-600 hover:text-gray-800 font-medium">Browse Items</Link>
             <Link to="/cart" className="relative text-gray-600 hover:text-gray-800">
               <ShoppingCart className="w-5 h-5" />
@@ -91,14 +93,14 @@ export const Header = ({ location, setLocation }) => {
 
           {/* Mobile Actions */}
           <div className="flex items-center space-x-2 md:hidden">
-            <button 
+            <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
               <Search className="w-5 h-5" />
             </button>
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)} 
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -107,16 +109,28 @@ export const Header = ({ location, setLocation }) => {
         </div>
 
         {/* Mobile Location */}
-        <div className="md:hidden mt-2 flex items-center space-x-2 px-1 pb-2">
-          <MapPin className="w-5 h-5 text-gray-500" />
+        <div className="md:hidden mt-2 flex items-center gap-2 px-2 pb-2">
+          <MapPin className="w-4 h-4 text-gray-500" />
           <input
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Location"
-            className="pl-2 pr-3 py-2 border border-gray-300 rounded-xl text-sm w-full"
+            className="flex-1 px-2 py-1 border border-gray-300 rounded-lg text-xs"
           />
         </div>
+
+        {/* Mobile Search Input */}
+        {isSearchOpen && (
+          <div className="md:hidden mt-2 px-1 pb-2">
+            <input
+              type="text"
+              placeholder="Search for items, categories..."
+              className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl"
+            />
+          </div>
+        )}
+
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4">
@@ -330,7 +344,7 @@ export const FeaturedItems = ({ items, location }) => {
     <section className="py-16 bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl md:text-2xl font-bold text-gray-900 mb-4">
             Featured Items
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -436,7 +450,7 @@ export const CategorySection = ({ categories }) => (
   <section className="py-16 bg-white">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl md:text-2xl font-bold text-gray-900 mb-4">
           Browse by Category
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -563,104 +577,104 @@ export const HowItWorks = () => {
 
   return (
     <section className="py-16 bg-gray-100">
-  <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
-  {/* Header */}
-  <div className="text-center mb-8">
-    <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-1">
-      How RentKart Works
-    </h2>
-    <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-      Whether you're looking to rent items or earn money from unused belongings,
-      we make the process simple, secure, and rewarding.
-    </p>
-  </div>
-
-  {/* Benefits */}
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-    {benefits.map((benefit, index) => (
-      <div
-        key={index}
-        className="text-center group px-2"
-      >
-        <div className="bg-gray-50 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 border border-gray-200">
-          <benefit.icon className="w-5 h-5 text-gray-600" />
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-1">
+            How RentKart Works
+          </h2>
+          <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+            Whether you're looking to rent items or earn money from unused belongings,
+            we make the process simple, secure, and rewarding.
+          </p>
         </div>
-        <h4 className="font-medium text-gray-900 text-xs mb-1">{benefit.title}</h4>
-        <p className="text-[11px] text-gray-500 leading-snug">{benefit.description}</p>
-      </div>
-    ))}
-  </div>
 
-
-
-    {/* Cards */}
-    <div className="grid lg:grid-cols-2 gap-12">
-      {/* Renter Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
-        <div className="text-center mb-6">
-          <div className="bg-gray-700 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Search className="w-6 h-6 text-white" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-1">For Renters</h3>
-          <p className="text-sm text-gray-600">Access what you need, when you need it</p>
-        </div>
-        <div className="space-y-5">
-          {renterSteps.map((step, index) => (
-            <div key={index} className="flex items-start space-x-3 group">
-              <div className="w-10 h-10 rounded-lg bg-gray-600 flex items-center justify-center">
-                <step.icon className="w-5 h-5 text-white" />
+        {/* Benefits */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          {benefits.map((benefit, index) => (
+            <div
+              key={index}
+              className="text-center group px-2"
+            >
+              <div className="bg-gray-50 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 border border-gray-200">
+                <benefit.icon className="w-5 h-5 text-gray-600" />
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-1">{step.title}</h4>
-                <p className="text-xs text-gray-600">{step.description}</p>
-              </div>
+              <h4 className="font-medium text-gray-900 text-xs mb-1">{benefit.title}</h4>
+              <p className="text-[11px] text-gray-500 leading-snug">{benefit.description}</p>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Owner Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
-        <div className="text-center mb-6">
-          <div className="bg-gray-800 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <DollarSign className="w-6 h-6 text-white" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-1">For Item Owners</h3>
-          <p className="text-sm text-gray-600">Earn from unused items easily</p>
-        </div>
-        <div className="space-y-5">
-          {ownerSteps.map((step, index) => (
-            <div key={index} className="flex items-start space-x-3 group">
-              <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center">
-                <step.icon className="w-5 h-5 text-white" />
+
+
+        {/* Cards */}
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Renter Card */}
+          <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+            <div className="text-center mb-6">
+              <div className="bg-gray-700 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Search className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-1">{step.title}</h4>
-                <p className="text-xs text-gray-600">{step.description}</p>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-1">For Renters</h3>
+              <p className="text-sm text-gray-600">Access what you need, when you need it</p>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
+            <div className="space-y-5">
+              {renterSteps.map((step, index) => (
+                <div key={index} className="flex items-start space-x-3 group">
+                  <div className="w-10 h-10 rounded-lg bg-gray-600 flex items-center justify-center">
+                    <step.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">{step.title}</h4>
+                    <p className="text-xs text-gray-600">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-    {/* CTA */}
-    <div className="text-center mt-14">
-      <div className="bg-gray-800 rounded-2xl p-6 text-white">
-        <h3 className="text-xl font-semibold mb-3">Ready to Get Started?</h3>
-        <p className="text-sm mb-4 opacity-90">Join thousands already renting and earning on RentKart</p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <button className="bg-white text-gray-800 px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100">
-            Start Renting
-          </button>
-          <button className="border border-white text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-white hover:text-gray-800">
-            List Your Items
-          </button>
+          {/* Owner Card */}
+          <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+            <div className="text-center mb-6">
+              <div className="bg-gray-800 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-1">For Item Owners</h3>
+              <p className="text-sm text-gray-600">Earn from unused items easily</p>
+            </div>
+            <div className="space-y-5">
+              {ownerSteps.map((step, index) => (
+                <div key={index} className="flex items-start space-x-3 group">
+                  <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center">
+                    <step.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">{step.title}</h4>
+                    <p className="text-xs text-gray-600">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mt-14">
+          <div className="bg-gray-800 rounded-2xl p-6 text-white">
+            <h3 className="text-xl font-semibold mb-3">Ready to Get Started?</h3>
+            <p className="text-sm mb-4 opacity-90">Join thousands already renting and earning on RentKart</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button className="bg-white text-gray-800 px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100">
+                Start Renting
+              </button>
+              <button className="border border-white text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-white hover:text-gray-800">
+                List Your Items
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
   );
 };
@@ -699,10 +713,10 @@ export const Footer = () => (
           <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
           <ul className="space-y-2">
             <li><a href="/items" className="text-gray-400 hover:text-white transition-colors">Browse Items</a></li>
-            <li><a href="/categories" className="text-gray-400 hover:text-white transition-colors">Categories</a></li>
+            <li><a href="/about-us" className="text-gray-400 hover:text-white transition-colors">About us</a></li>
             <li><a href="/how-it-works" className="text-gray-400 hover:text-white transition-colors">How It Works</a></li>
             <li><a href="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
-            <li><a href="/safety" className="text-gray-400 hover:text-white transition-colors">Safety</a></li>
+            
           </ul>
         </div>
 
@@ -710,11 +724,11 @@ export const Footer = () => (
         <div>
           <h4 className="text-lg font-semibold mb-4">Support</h4>
           <ul className="space-y-2">
-            <li><a href="/help" className="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
-            <li><a href="/contact" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
-            <li><a href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
-            <li><a href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="/disputes" className="text-gray-400 hover:text-white transition-colors">Dispute Resolution</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+            
           </ul>
         </div>
       </div>

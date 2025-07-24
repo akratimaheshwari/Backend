@@ -40,7 +40,7 @@ const Header = ({ location, setLocation, isLoggedIn }) => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/home" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
+            <Link to="/" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
             <Link to="/items" className="text-gray-600 hover:text-gray-800 font-medium">Browse Items</Link>
             <Link to="/cart" className="relative text-gray-600 hover:text-gray-800">
               <ShoppingCart className="w-5 h-5" />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';
 import {
   ArrowLeft,
@@ -22,7 +22,7 @@ import {
   ChevronDown,
   Award,
   Verified,
-  TrendingUp,Bell ,  Menu, X
+  TrendingUp, Bell, Menu, X
 } from 'lucide-react';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import axios from 'axios';
@@ -39,6 +39,7 @@ const ItemDetails = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [wishlist, setWishlist] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
   // Review states
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -46,39 +47,45 @@ const ItemDetails = () => {
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   const [reviewFilter, setReviewFilter] = useState('all');
   const [sortReviews, setSortReviews] = useState('newest');
+ 
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
-    const fetchItem = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/items/${id}`);
-        const data = await res.json();
-        setItem(data);
-      } catch (err) {
-        console.error("Failed to fetch item:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchAll = async () => {
+    try {
+      setLoading(true);
 
-    const fetchReviews = async () => {
-      try {
-        setReviewsLoading(true);
-        const res = await fetch(`/api/items/${id}/reviews`);
-        if (res.ok) {
-          const data = await res.json();
-          setReviews(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch reviews:", err);
-      } finally {
-        setReviewsLoading(false);
-      }
-    };
+      // Fetch item
+      const itemRes = await fetch(`/api/items/${id}`);
+      const itemData = await itemRes.json();
+      setItem(itemData);
 
-    fetchItem();
-    fetchReviews();
-  }, [id]);
+      // Fetch wishlist
+      const token = localStorage.getItem("token");
+      const wishlistRes = await fetch('/api/wishlist', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const wishlist = await wishlistRes.json();
+      const isItemLiked = wishlist.some(w => w._id === id);
+      setIsLiked(isItemLiked);
+
+      // Fetch reviews
+      const reviewsRes = await fetch(`/api/items/${id}/reviews`);
+      if (reviewsRes.ok) {
+        const reviewData = await reviewsRes.json();
+        setReviews(reviewData);
+      }
+    } catch (err) {
+      console.error("Error fetching item/wishlist/reviews:", err);
+    } finally {
+      setLoading(false);
+      setReviewsLoading(false);
+    }
+  };
+
+  fetchAll();
+}, [id]);
+
 
   const getAutoEndDate = (startDate, rentalType) => {
     if (!startDate || !rentalType) return '';
@@ -227,33 +234,25 @@ const ItemDetails = () => {
           return new Date(b.createdAt) - new Date(a.createdAt);
       }
     });
-  const handleAddToWishlist = async (itemId) => {
-  try {
+  const toggleWishlist = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please login first");
-      return;
+    await fetch(`/api/wishlist/toggle/${id}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setIsLiked(prev => !prev);
+  };
+
+  const handleUserClick = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // ✅ Redirect to user dashboard or profile
+      navigate('/dashboard');
+    } else {
+      // 🔒 Not logged in → redirect to login
+      navigate('/login');
     }
-
-    await axios.post(
-      "/api/wishlist/add",
-      { itemId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    setLikedItems((prev) => [...prev, itemId]); // ✅ Add to liked list
-    alert("Item added to wishlist");
-  } catch (error) {
-    console.error("Wishlist error", error);
-    alert("Failed to add item to wishlist");
-  }
-};
-
-
+  };
 
   const features = [
     { icon: Shield, text: "Verified Owner", color: "bg-blue-100 text-blue-600" },
@@ -306,96 +305,99 @@ const ItemDetails = () => {
     <div className="min-h-screen bg-neutral-50">
       {/* Header */}
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-        {/* Left: Logo + Back */}
-        <div className="flex items-center gap-4">
-          <Link
-            to="/items"
-            className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="hidden sm:inline">Back to Items</span>
-          </Link>
-
-          <Link
-            to="/"
-            className="text-xl font-bold text-neutral-800 hover:text-emerald-600 transition-colors"
-          >
-            RentKart
-          </Link>
-        </div>
-
-        {/* Center: Search & Location (hidden on mobile) */}
-        <div className="hidden md:flex items-center gap-4 flex-1 max-w-2xl mx-4">
-          <input
-            type="text"
-            placeholder="Search items..."
-            className="flex-1 px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <input
-            type="text"
-            placeholder="Location"
-            className="w-40 px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-
-        {/* Right: Icons */}
-        <div className="flex items-center gap-4 md:gap-6">
-          {/* Desktop Icons */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link to="/wishlist" className="text-neutral-600 hover:text-rose-500 transition">
-              <Heart className="w-5 h-5" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          {/* Left: Logo + Back */}
+          <div className="flex items-center gap-4">
+            <Link
+              to="/items"
+              className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">Back to Items</span>
             </Link>
-            <Link to="/cart" className="text-neutral-600 hover:text-blue-600 transition">
-              <ShoppingCart className="w-5 h-5" />
-            </Link>
-            <Link to="/notifications" className="relative text-neutral-600 hover:text-amber-500 transition">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-            </Link>
-            <Link to="/profile" className="text-neutral-600 hover:text-neutral-800 transition">
-              <User className="w-5 h-5" />
+
+            <Link
+              to="/"
+              className="text-xl font-bold text-neutral-800 hover:text-emerald-600 transition-colors"
+            >
+              RentKart
             </Link>
           </div>
 
-          {/* Mobile Hamburger */}
-          <button
-            className="md:hidden p-2 text-neutral-600 hover:text-neutral-900"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
+          {/* Center: Search & Location (hidden on mobile) */}
+          <div className="hidden md:flex items-center gap-4 flex-1 max-w-2xl mx-4">
+            <input
+              type="text"
+              placeholder="Search items..."
+              className="flex-1 px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="Location"
+              className="w-40 px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
 
-      {/* Mobile Dropdown Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 px-4 pb-4 space-y-4 bg-white">
-          <input
-            type="text"
-            placeholder="Search items..."
-            className="w-full px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <input
-            type="text"
-            placeholder="Location"
-            className="w-full px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+          {/* Right: Icons */}
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* Desktop Icons */}
+            <div className="hidden md:flex items-center gap-4">
+              <Link to="/wishlist" className="text-neutral-600 hover:text-rose-500 transition">
+                <Heart className="w-5 h-5" />
+              </Link>
+              <Link to="/cart" className="text-neutral-600 hover:text-blue-600 transition">
+                <ShoppingCart className="w-5 h-5" />
+              </Link>
+              <Link to="/notifications" className="relative text-neutral-600 hover:text-amber-500 transition">
+                <Bell className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+              </Link>
+              <div
+                onClick={handleUserClick}
+                className="cursor-pointer hover:text-neutral-700"
+              >
+                <User className="w-6 h-6" />
+              </div>
+            </div>
 
-          <div className="flex justify-between text-neutral-600">
-            <Link to="/wishlist" className="flex items-center gap-2 hover:text-rose-500">
-              <Heart className="w-5 h-5" /> Wishlist
-            </Link>
-            <Link to="/cart" className="flex items-center gap-2 hover:text-blue-600">
-              <ShoppingCart className="w-5 h-5" /> Cart
-            </Link>
-            <Link to="/profile" className="flex items-center gap-2 hover:text-neutral-900">
-              <User className="w-5 h-5" /> Profile
-            </Link>
+            {/* Mobile Hamburger */}
+            <button
+              className="md:hidden p-2 text-neutral-600 hover:text-neutral-900"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 px-4 pb-4 space-y-4 bg-white">
+            <input
+              type="text"
+              placeholder="Search items..."
+              className="w-full px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="Location"
+              className="w-full px-4 py-2 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+
+            <div className="flex justify-between text-neutral-600">
+              <Link to="/wishlist" className="flex items-center gap-2 hover:text-rose-500">
+                <Heart className="w-5 h-5" /> Wishlist
+              </Link>
+              <Link to="/cart" className="flex items-center gap-2 hover:text-blue-600">
+                <ShoppingCart className="w-5 h-5" /> Cart
+              </Link>
+              <Link to="/profile" className="flex items-center gap-2 hover:text-neutral-900">
+                <User className="w-5 h-5" /> Profile
+              </Link>
+            </div>
+          </div>
+        )}
+      </header>
 
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -453,16 +455,11 @@ const ItemDetails = () => {
               {/* Action Buttons Overlay */}
               <div className="absolute top-4 right-4 flex gap-2">
                 <button
-                  onClick={() => handleAddToWishlist(item._id)}
-                  className={`p-3 rounded-full backdrop-blur-sm transition-all shadow-lg ${likedItems.includes(item._id)
-                      ? 'bg-red-500 text-white'
-                      : 'bg-white/90 text-neutral-600 hover:bg-white'
+                  onClick={toggleWishlist}
+                  className={`absolute top-4 right-4 p-2 rounded-full transition ${isLiked ? 'bg-red-500 text-white' : 'bg-white text-gray-600'
                     }`}
                 >
-                  <Heart
-                    className={`w-5 h-5 ${likedItems.includes(item._id) ? 'fill-current' : ''
-                      }`}
-                  />
+                  <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
                 </button>
 
                 <button className="p-3 rounded-full bg-white/90 backdrop-blur-sm text-neutral-600 hover:bg-white transition-all shadow-lg">

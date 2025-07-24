@@ -35,10 +35,10 @@ import { Package, Mail, Phone,Facebook,Twitter,
           <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
           <ul className="space-y-2">
             <li><a href="/items" className="text-gray-400 hover:text-white transition-colors">Browse Items</a></li>
-            <li><a href="/categories" className="text-gray-400 hover:text-white transition-colors">Categories</a></li>
+            <li><a href="/about-us" className="text-gray-400 hover:text-white transition-colors">About us</a></li>
             <li><a href="/how-it-works" className="text-gray-400 hover:text-white transition-colors">How It Works</a></li>
             <li><a href="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
-            <li><a href="/safety" className="text-gray-400 hover:text-white transition-colors">Safety</a></li>
+            
           </ul>
         </div>
 
@@ -46,11 +46,11 @@ import { Package, Mail, Phone,Facebook,Twitter,
         <div>
           <h4 className="text-lg font-semibold mb-4">Support</h4>
           <ul className="space-y-2">
-            <li><a href="/help" className="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
-            <li><a href="/contact" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
-            <li><a href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
-            <li><a href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="/disputes" className="text-gray-400 hover:text-white transition-colors">Dispute Resolution</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+            
           </ul>
         </div>
       </div>

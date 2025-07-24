@@ -22,11 +22,18 @@ const Signup = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let updatedValue = value;
+
+    if (name === 'phone') {
+      // Remove all non-digit characters and limit to 10 digits
+      updatedValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: updatedValue
     }));
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -35,50 +42,51 @@ const Signup = () => {
     }
   };
 
+
   const validateStep1 = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     } else if (formData.name.trim().length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
     }
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
     const newErrors = {};
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     if (!formData.phone) {
       newErrors.phone = 'Phone number is required';
     } else if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
-    
+
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,38 +102,39 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateStep2()) return;
-  setIsLoading(true);
+    e.preventDefault();
+    if (!validateStep2()) return;
+    setIsLoading(true);
 
-  try {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+        phone: `+91${formData.phone}`
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.status === 409) {
-      // 🔴 Show friendly message to user
-      setErrors({ general: data.message || 'User already exists. Please login.' });
-      return;
+      if (response.status === 409) {
+        // 🔴 Show friendly message to user
+        setErrors({ general: data.message || 'User already exists. Please login.' });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      // ✅ Success
+      localStorage.setItem('token', data.token);
+      navigate('/');
+    } catch (error) {
+      setErrors({ general: error.message });
+    } finally {
+      setIsLoading(false);
     }
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Signup failed');
-    }
-
-    // ✅ Success
-    localStorage.setItem('token', data.token);
-    navigate('/home');
-  } catch (error) {
-    setErrors({ general: error.message });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
 
 
@@ -135,6 +144,9 @@ const Signup = () => {
   ];
 
   return (
+     
+  
+
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center p-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden">
@@ -145,6 +157,7 @@ const Signup = () => {
 
       <div className="relative w-full max-w-md">
         {/* Header */}
+        
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-2xl mb-4">
             <User className="w-8 h-8 text-white" />
@@ -158,11 +171,10 @@ const Signup = () => {
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.number} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${
-                  currentStep >= step.number
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${currentStep >= step.number
                     ? 'bg-neutral-900 border-neutral-900 text-white'
                     : 'border-neutral-300 text-neutral-400'
-                }`}>
+                  }`}>
                   {currentStep > step.number ? (
                     <CheckCircle className="w-5 h-5" />
                   ) : (
@@ -170,9 +182,8 @@ const Signup = () => {
                   )}
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-20 h-0.5 mx-2 transition-all ${
-                    currentStep > step.number ? 'bg-neutral-900' : 'bg-neutral-300'
-                  }`}></div>
+                  <div className={`w-20 h-0.5 mx-2 transition-all ${currentStep > step.number ? 'bg-neutral-900' : 'bg-neutral-300'
+                    }`}></div>
                 )}
               </div>
             ))}
@@ -209,9 +220,8 @@ const Signup = () => {
                       placeholder="Enter your full name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${
-                        errors.name ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${errors.name ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     />
                   </div>
                   {errors.name && (
@@ -234,9 +244,8 @@ const Signup = () => {
                       placeholder="Enter your email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${
-                        errors.email ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${errors.email ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     />
                   </div>
                   {errors.email && (
@@ -272,9 +281,8 @@ const Signup = () => {
                       placeholder="Create a password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${
-                        errors.password ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${errors.password ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     />
                     <button
                       type="button"
@@ -304,9 +312,8 @@ const Signup = () => {
                       placeholder="Confirm your password"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${
-                        errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     />
                     <button
                       type="button"
@@ -322,23 +329,28 @@ const Signup = () => {
                 </div>
 
                 {/* Phone Field */}
+
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Phone Number
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-neutral-400" />
+                  <div className="relative flex items-center">
+                    {/* Phone Icon and Country Code */}
+                    <div className="absolute left-0 pl-3 flex items-center space-x-1 text-neutral-500">
+                      <Phone className="w-4 h-4" />
+                      <span className="text-sm font-medium">+91</span>
                     </div>
+
+                    {/* Input with padding to accommodate icon + code */}
                     <input
                       type="tel"
                       name="phone"
                       placeholder="Enter your phone number"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${
-                        errors.phone ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`w-full pl-20 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${errors.phone ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      maxLength={10}
                     />
                   </div>
                   {errors.phone && (
@@ -361,9 +373,8 @@ const Signup = () => {
                       placeholder="Enter your address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${
-                        errors.address ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all ${errors.address ? 'border-red-300 bg-red-50' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     />
                   </div>
                   {errors.address && (
@@ -406,7 +417,7 @@ const Signup = () => {
             <p className="text-neutral-600">
               Already have an account?{' '}
               <Link
-                to="/"
+                to="/login"
                 className="text-neutral-900 font-medium hover:underline transition-all"
               >
                 Login in

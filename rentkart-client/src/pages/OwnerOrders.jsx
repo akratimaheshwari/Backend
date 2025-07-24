@@ -136,8 +136,9 @@ const OwnerOrders = () => {
   };
 
   const handleContactRenter = (order) => {
-    const message = `Hi ${order.user?.name}, regarding your rental request for ${order.items?.[0]?.item_id?.title}...`;
-    window.open(`mailto:${order.user?.email}?subject=Rental Request&body=${encodeURIComponent(message)}`);
+    const message = `Hi ${order.renter_id?.name}, regarding your rental request for ${order.items?.[0]?.item_id?.title}...`;
+window.open(`mailto:${order.renter_id?.email}?subject=Rental Request&body=${encodeURIComponent(message)}`);
+
   };
 
   const exportOrders = () => {
@@ -192,8 +193,11 @@ const OwnerOrders = () => {
               <div key={order._id} className="bg-white border rounded-2xl p-6 space-y-4 shadow-sm">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-lg font-bold">{order.user?.name}</h3>
-                    <p className="text-sm text-gray-500">{order.user?.email} | {order.user?.phone}</p>
+                    <h3 className="text-lg font-bold">{order.renter_id?.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      {order.renter_id?.email} | {order.renter_id?.phone}
+                    </p>
+
                   </div>
                   <div className={`px-4 py-1.5 rounded-full text-sm border ${status.color} flex items-center gap-2`}>
                     <StatusIcon className="w-4 h-4" />
