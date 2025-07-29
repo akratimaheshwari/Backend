@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import RenterDashboard from '../components/RenterDashboard';
 import OwnerDashboard from '../components/OwnerDashboard';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-
+import { useNavigate ,Link} from 'react-router-dom';
 import {
   User,
   Mail,
@@ -26,28 +24,43 @@ const UserDashboard = () => {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('renter');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
   const fetchUser = async () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      navigate('/login'); // redirect if no token
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch('/api/users/profile', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      if (!res.ok) throw new Error('Unauthorized');
+
       const data = await res.json();
       setUser(data);
-      localStorage.setItem('user', JSON.stringify(data)); // Keep localStorage in sync (optional)
+      localStorage.setItem('user', JSON.stringify(data));
     } catch (err) {
       console.error('Failed to fetch user:', err);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login'); // redirect on error
+    } finally {
+      setIsLoading(false); // mark loading complete
     }
   };
 
   fetchUser();
-}, []);
+}, [navigate]);
+
 
 
 
@@ -73,16 +86,17 @@ const UserDashboard = () => {
     ]
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-center">Loading your dashboard...</p>
-        </div>
+  if (isLoading) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-2xl shadow-lg">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600 text-center">Loading your dashboard...</p>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50">

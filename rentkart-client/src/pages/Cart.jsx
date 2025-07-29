@@ -9,8 +9,12 @@ const Cart = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   useEffect(() => {
-    fetchCart();
-  }, []);
+  if (!token) {
+    navigate('/login');
+    return;
+  }
+  fetchCart();
+}, [token, navigate]);
 
   const fetchCart = async () => {
     try {

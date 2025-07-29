@@ -293,6 +293,7 @@ export const FeaturedItems = ({ items, location }) => {
     )
     : items;
   const navigate = useNavigate();
+  // const [isLiked, setIsLiked] = useState(false);
 
   const handleAddToCartAndCheckout = async (itemId) => {
     try {
@@ -692,8 +693,7 @@ export const Footer = () => (
             <h3 className="text-2xl font-bold">RentKart</h3>
           </div>
           <p className="text-gray-400 mb-6 max-w-md">
-            The ultimate marketplace for renting and lending items. Turn your unused belongings into income
-            or find exactly what you need without buying.
+            Why buy when you can rent? Discover, lend, and earn with RentKart — your smart rental marketplace.
           </p>
           <div className="flex space-x-4">
             <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">

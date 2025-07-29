@@ -69,6 +69,11 @@ import Wishlist from './pages/Wishlist';
 import Footer from './components/Footer';
 import HowItWorks from './pages/HowItWorks';
 import AboutUs from './pages/AboutUs';
+import NotFound from './pages/NotFound';
+import ProtectedRoute from './pages/ProtectedRoute';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function AppRoutes() {
   const location = useLocation();
 
@@ -78,27 +83,34 @@ function AppRoutes() {
 
   return (
     <>
+    
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<UserDashboard />} />  
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/owner-order" element={<OwnerOrders />} />
-        <Route path="/items" element={<Items />} />
-        <Route path="/category/:slug" element={<CategoryItems />} />
-        <Route path="/items/:id" element={<ItemsDetails />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/my-listings" element={<MyListing />} />
-        <Route path="/add-item" element={<AddItems />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/about-us" element={<AboutUs/>} />
-      </Routes>
+  {/* Public Routes */}
+  <Route path="/login" element={<Login />} />
+  <Route path="/signup" element={<Signup />} />
+  <Route path="/" element={<Home />} />
+  <Route path="/how-it-works" element={<HowItWorks />} />
+  <Route path="/about-us" element={<AboutUs />} />
+  <Route path="/category/:slug" element={<CategoryItems />} />
+  <Route path="/items/:id" element={<ItemsDetails />} />
+  <Route path="/items" element={<Items />} />
 
+  {/* ✅ Protected Routes */}
+  <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+  <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+  <Route path="/owner-order" element={<ProtectedRoute><OwnerOrders /></ProtectedRoute>} />
+  <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+  <Route path="/my-listings" element={<ProtectedRoute><MyListing /></ProtectedRoute>} />
+  <Route path="/add-item" element={<ProtectedRoute><AddItems /></ProtectedRoute>} />
+  <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+  <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+  <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+
+  <Route path="*" element={<NotFound />} />
+</Routes>
+
+     {/* <ToastContainer position="top-center" autoClose={3000} /> */}
       {/* 👇 Show footer only if not login or signup */}
       {!hideFooter && <Footer />}
     </>
@@ -107,9 +119,14 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AppRoutes />
-    </Router>
+      <>
+  <Router>
+    <AppRoutes />
+  </Router>
+  
+</>
+
+    
   );
 }
 

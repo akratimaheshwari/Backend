@@ -121,7 +121,7 @@ export const checkout = async (req, res) => {
       totalAmount,
       shippingAddress,
       paymentMethod: paymentMethod || 'COD',
-      status: 'pending'
+      status: 'Pending'
     });
 
     await newOrder.save();

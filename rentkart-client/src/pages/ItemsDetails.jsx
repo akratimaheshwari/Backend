@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';
+import { requireAuth } from '../utils/authUtils';
+
 import {
   ArrowLeft,
   MapPin,
@@ -100,6 +102,7 @@ const ItemDetails = () => {
   };
 
   const handleAddToCart = async () => {
+    if (!requireAuth(navigate)) return;
     try {
       const token = localStorage.getItem('token');
       const checkRes = await fetch('/api/items/check-availability', {
@@ -140,6 +143,7 @@ const ItemDetails = () => {
         alert('Item added to cart successfully!');
       } else {
         alert('Failed to add to cart');
+        
       }
     } catch (err) {
       console.error("Failed to add to cart:", err);
@@ -173,6 +177,7 @@ const ItemDetails = () => {
   };
 
   const handleReviewHelpful = async (reviewId, isHelpful) => {
+    if (!requireAuth(navigate)) return;
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`/api/reviews/${reviewId}/helpful`, {
@@ -235,6 +240,7 @@ const ItemDetails = () => {
       }
     });
   const toggleWishlist = async () => {
+    if (!requireAuth(navigate)) return;
     const token = localStorage.getItem("token");
     await fetch(`/api/wishlist/toggle/${id}`, {
       method: 'POST',

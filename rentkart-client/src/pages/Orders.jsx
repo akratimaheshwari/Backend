@@ -5,7 +5,7 @@ import {
   Download, MessageCircle, RotateCcw, ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import OrderHeader from '../components/OrderHeader';
+import Header from '../components/Header';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -18,6 +18,8 @@ const Orders = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [trackingOrder, setTrackingOrder] = useState(null);
+  const [location, setLocation] = useState("");
+    const [debouncedLocation, setDebouncedLocation] = useState(location);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -230,14 +232,7 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ✅ Order Header with search/filter/export */}
-      <OrderHeader
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        onExport={handleExport}
-        isLoggedIn={isLoggedIn}
-      />
+      <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}
