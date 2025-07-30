@@ -7,7 +7,7 @@ import {
   HowItWorks,
   Footer
 } from '../components/HomeLayout';
-
+// import Header from '../components/Header';
 
 
 const Home = () => {

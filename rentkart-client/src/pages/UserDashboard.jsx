@@ -134,11 +134,22 @@ const UserDashboard = () => {
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
                 >
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                  />
+                  {user.avatar ? (
+  <img
+    src={user.avatar}
+    alt={user.name}
+    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+  />
+) : (
+  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-semibold text-sm uppercase border-2 border-gray-200">
+    {user.name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)}
+  </div>
+)}
+
                   <div className="text-left hidden sm:block">
                     <p className="text-sm font-semibold text-gray-800">{user.name}</p>
                     <p className="text-xs text-gray-500">

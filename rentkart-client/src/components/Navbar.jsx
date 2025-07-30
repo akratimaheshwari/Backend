@@ -58,7 +58,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '/', icon: Home },
-    { name: 'My Listings', href: '/my-listings', icon: List },
+    // { name: 'My Listings', href: '/my-listings', icon: List },
     { name: 'Favorites', href: '/wishlist', icon: Heart },
     { name: 'Messages', href: '/messages', icon: MessageCircle },
   ];
@@ -68,11 +68,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Package className="w-8 h-8 text-gray-700 mr-2" />
-            <span className="text-2xl font-bold text-gray-900">RentKart</span>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">RentKart</h1>
           </div>
-
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map(({ name, href, icon: Icon }) => (
@@ -119,9 +120,20 @@ const Navbar = () => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-2 p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               >
-                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
+                {currentUser?.name ? (
+                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-sm font-semibold uppercase">
+                    {currentUser.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .slice(0, 2)}
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                )}
+
                 <span className="hidden sm:block text-sm font-medium">
                   {currentUser?.name || 'Profile'}
                 </span>
