@@ -106,7 +106,7 @@ const Header = ({ location, setLocation }) => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4">
             <nav className="space-y-3">
-              <a href="/home" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Home</a>
+              <a href="/" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Home</a>
               <a href="/items" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Browse Items</a>
               <a href="/cart" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
                 <ShoppingCart className="w-5 h-5" />
