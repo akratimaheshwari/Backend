@@ -77,7 +77,7 @@ import 'react-toastify/dist/ReactToastify.css';
 function AppRoutes() {
   const location = useLocation();
 
-  // 👇 Hide footer only on login and signup pages
+  //  Hide footer only on login and signup pages
   const hideFooter = location.pathname === '/login' || location.pathname === '/signup'|| location.pathname ==='/'||
   location.pathname === '/profile';
 
@@ -95,7 +95,7 @@ function AppRoutes() {
   <Route path="/items/:id" element={<ItemsDetails />} />
   <Route path="/items" element={<Items />} />
 
-  {/* ✅ Protected Routes */}
+  {/*  Protected Routes */}
   <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
   <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
   <Route path="/owner-order" element={<ProtectedRoute><OwnerOrders /></ProtectedRoute>} />
@@ -111,7 +111,7 @@ function AppRoutes() {
 </Routes>
 
      {/* <ToastContainer position="top-center" autoClose={3000} /> */}
-      {/* 👇 Show footer only if not login or signup */}
+      {/*  Show footer only if not login or signup */}
       {!hideFooter && <Footer />}
     </>
   );

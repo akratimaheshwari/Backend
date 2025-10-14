@@ -32,7 +32,7 @@ const app = express();
 app.use(express.json());
 app.use(cors())
 app.use(express.urlencoded({ extended: true }));
-console.log("✅ JWT_SECRET in server.js:",process.env.JWT_SECRET);
+console.log(" JWT_SECRET in server.js:",process.env.JWT_SECRET);
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -65,7 +65,7 @@ const frontendBuildPath = path.resolve(__dirname, 'rentkart-client', 'build');
 if (fs.existsSync(frontendIndexPath)) {
   app.use(express.static(frontendBuildPath));
 
-  // ✅ Safe catch-all for frontend in Express 5
+  //  Safe catch-all for frontend in Express 5
   app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/admin')) {
       res.sendFile(frontendIndexPath);
@@ -88,4 +88,4 @@ const startServer = async () => {
   });
 };
 
-startServer(); // ✅ call the function here
+startServer(); //  call the function here
