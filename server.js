@@ -15,7 +15,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import wishlistRoutes from './routes/wishlistRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import returnRoutes from './routes/returnRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js';
+//import reviewRoutes from './routes/reviewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import categoryRoutes from "./routes/categoryRoutes.js";
 import addressRoutes from './routes/addressRoutes.js';
@@ -41,7 +41,7 @@ app.use('/admin', adminRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/returns', returnRoutes);
-app.use('/api/reviews', reviewRoutes);
+//app.use('/api/reviews', reviewRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use('/api/addresses', addressRoutes);
 

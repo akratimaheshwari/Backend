@@ -1,10 +1,31 @@
 import express from 'express';
-import { makeUserAdmin,getAdminDashboard } from '../controllers/adminController.js';
-import { verifyToken } from '../middleware/authMiddleware.js';
-import { verifyAdmin } from '../middleware/authMiddleware.js';
-
+import { verifyToken, verifyAdmin } from '../middleware/authMiddleware.js';
+import User from '../models/user.js';
+import {
+  getAllUsers,
+  deleteUser,
+  getAllItems,
+  deleteItem,
+  getAllOrders,
+  updateOrderStatus,
+  getAllReturns,
+//   processReturn,
+  sendNotification
+} from '../controllers/adminController.js'
 const router = express.Router();
 
-router.put('/users/:id/make-admin', verifyToken, verifyAdmin, makeUserAdmin);
-router.get('/dashboard', getAdminDashboard);
+router.use(verifyToken, verifyAdmin);
+
+router.get('/users', getAllUsers);
+router.delete('/users/:id', deleteUser);
+
+router.get('/items', getAllItems);
+router.delete('/items/:id', deleteItem);
+
+router.get('/orders', getAllOrders);
+router.put('/orders/:id/status', updateOrderStatus);
+router.get('/returns', getAllReturns);
+// router.put('/returns/:id', processReturn);
+
+router.post('/notifications', sendNotification);
 export default router;

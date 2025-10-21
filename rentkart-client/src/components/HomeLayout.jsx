@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  Share2,
   Search,
   MessageCircle,
   Package,
@@ -289,8 +290,8 @@ export const HeroCarousel = () => {
 export const FeaturedItems = ({ items, location }) => {
   const filteredItems = location
     ? items.filter(item =>
-      item.location?.toLowerCase().includes(location.toLowerCase())
-    )
+        item.location?.toLowerCase().includes(location.toLowerCase())
+      )
     : items;
   const navigate = useNavigate();
   // const [isLiked, setIsLiked] = useState(false);
@@ -301,146 +302,222 @@ export const FeaturedItems = ({ items, location }) => {
       const res = await axios.post('/api/cart/add', { itemId, quantity: 1 }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success("Item added to cart");
+      console.log("Item added to cart", res.data); 
       navigate('/cart');
     } catch (err) {
       console.error(err);
-      toast.error("Failed to add item to cart");
+      console.error("Failed to add item to cart", err); 
     }
   };
 
   const [wishlistItems, setWishlistItems] = useState([]);
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
-  const handleAddToWishlist = async (itemId) => {
+        const res = await axios.get("/api/wishlist", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const wishlistIds = res.data.items.map((item) => item._id);
+        setWishlistItems(wishlistIds);
+      } catch (err) {
+        console.error("Error fetching wishlist:", err);
+      }
+    };
+
+    fetchWishlist();
+    
+  }, []);
+
+    const handleAddToWishlist = async (itemId) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Please login first");
+        console.warn("Please login first"); 
         return;
       }
 
-      const res = await axios.post(
-        '/api/wishlist/add',
-        { itemId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const alreadyInWishlist = wishlistItems.includes(itemId);
 
-      // Optional: update state
-      setWishlistItems((prev) => [...prev, itemId]);
-      toast.success("Added to wishlist");
-
+      if (alreadyInWishlist) {
+        // Remove from wishlist
+        await axios.delete(`/api/wishlist/remove/${itemId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setWishlistItems((prev) => prev.filter((id) => id !== itemId));
+        console.info("Removed from wishlist");
+      } else {
+        // Add to wishlist
+        await axios.post(
+          "/api/wishlist/add",
+          { itemId },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setWishlistItems((prev) => [...prev, itemId]);
+        console.info("Added to wishlist");
+      }
     } catch (err) {
-      console.error("Error adding to wishlist", err);
-      toast.error("Failed to add to wishlist");
+      console.error("Error updating wishlist:", err);
+      console.error("Failed to update wishlist", err);
     }
   };
 
 
-
   return (
-    <section className="py-16 bg-gray-100">
+    <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-2xl font-bold text-gray-900 mb-4">
-            Featured Items
+        
+        {/* --- Section Header --- */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
+            Featured Rentals
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover our most popular rental items, carefully selected for quality and value
+          <p className="text-xl text-gray-500 max-w-3xl mx-auto">
+            Discover our curated collection of most popular rental items, selected for quality and excellent value.
           </p>
         </div>
+        {/* --- End Section Header --- */}
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* --- Items Grid: Ensures 4 columns on larger screens --- */}
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
           {filteredItems.map(item => (
-            <div key={item._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
-              <div className="relative overflow-hidden">
+            <div 
+              key={item._id} 
+              // MODIFIED: Removed 'overflow-hidden' from the card container to prevent button clipping
+              className="group bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-1"
+            >
+              
+              {/* --- Image Section --- */}
+              {/* NOTE: We kept 'overflow-hidden' here to ensure the image zoom doesn't break the card shape. */}
+              <div className="relative overflow-hidden rounded-t-xl"> 
                 <Link to={`/items/${item._id}`}>
                   <img
                     src={item.images[0]}
                     alt={item.title}
-                    className="h-48 w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="h-52 w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
                   />
                 </Link>
 
-                <div className="absolute top-3 right-3 z-10">
+                {/* Wishlist & Share Buttons */}
+                <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
                     onClick={() => handleAddToWishlist(item._id)}
-                    className="bg-white p-2 rounded-full shadow-md hover:shadow-lg transition"
+                    title={wishlistItems.includes(item._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                    className={`p-2 rounded-full shadow-md transition ${
+                      wishlistItems.includes(item._id)
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
                   >
                     <Heart
-                      className={`w-5 h-5 transition-colors ${wishlistItems.includes(item._id)
-                        ? "text-red-500"
-                        : "text-gray-500 hover:text-red-500"
-                        }`}
+                      className={`w-5 h-5 ${
+                        wishlistItems.includes(item._id) ? "fill-current text-white" : "stroke-current"
+                      }`}
                     />
+                  </button>
+
+                  <button 
+                    title="Share Item"
+                    className="p-2 rounded-full bg-white text-neutral-600 hover:bg-gray-100 transition-all shadow-md"
+                  >
+                    <Share2 className="w-5 h-5" />
                   </button>
                 </div>
 
-
-
-                <div className="absolute bottom-4 left-4">
-                  <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                {/* Status/Tag */}
+                {/* <div className="absolute bottom-3 left-3">
+                  <span className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md">
                     Available
                   </span>
-                </div>
+                </div> */}
               </div>
+              {/* --- End Image Section --- */}
 
-              <div className="p-6">
-                <Link to={`/items/${item._id}`} onClick={() => console.log("Navigating to", item._id)}>
+              {/* --- Details Section: Flexbox for Content Alignment --- */}
+              {/* MODIFIED: Removed 'h-full' to allow the container to fully render all content */}
+              <div className="p-5 flex flex-col"> 
+                
+                {/* Primary Content Container: Allows content to grow, pushing footer down */}
+                <div className="flex-grow"> 
+                    
+                    {/* Title: Uses min-h to reserve space for two lines, ensuring alignment */}
+                    <Link to={`/items/${item._id}`} onClick={() => console.log("Navigating to", item._id)}>
+                        <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2 min-h-[56px]"> 
+                            {item.title}
+                        </h4>
+                    </Link>
 
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                    {item.title}
-                  </h4>
-                </Link>
+                    {/* Rating & Location */}
+                    <div className="flex items-center justify-between text-sm mb-3">
+                        <div className="flex items-center space-x-1">
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                            <span className="font-semibold text-gray-800">4.8</span>
+                            <span className="text-gray-500">(24 Reviews)</span>
+                        </div>
+                        <div className="flex items-center text-gray-500">
+                            <MapPin className="w-4 h-4 mr-1.5" />
+                            <span className="font-medium">{item.location || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div> 
+                {/* End flex-grow */}
 
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                  {item.description}
-                </p>
-
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium text-gray-700">4.8</span>
-                    <span className="text-sm text-gray-500">(24)</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span>{item.location || 'N/A'}</span>
-                  </div>
+                {/* Price and Action Buttons Container: Stays at the bottom */}
+                <div>
+                    {/* Price */}
+                    <div className="flex items-end justify-between border-t pt-4 mt-4">
+                        <div className="text-3xl font-extrabold text-emerald-600">
+                            ₹{item.pricing.per_day}
+                            <span className="text-base font-normal text-gray-500 ml-1">/day</span>
+                        </div>
+                        <div className="text-sm text-gray-500 font-medium">
+                            ₹{item.pricing.per_week || item.pricing.per_day * 7}/week
+                        </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex space-x-3 mt-5">
+                        {/* <button
+                            onClick={() => handleAddToCartAndCheckout(item._id)}
+                            className="flex-1 flex items-center justify-center bg-emerald-500 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-emerald-600 transition-colors shadow-md"
+                        >
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            Add to Cart
+                        </button> */}
+                        <button
+                            onClick={() => navigate(`/items/${item._id}`)}
+                            className="flex-1 bg-gray-800 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-700 transition-colors shadow-md"
+                        >
+                            Rent Now
+                        </button>
+                    </div>
                 </div>
-
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-2xl font-bold text-gray-900">
-                    ₹{item.pricing.per_day}
-                    <span className="text-sm font-normal text-gray-500">/day</span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    ₹{item.pricing.per_week || item.pricing.per_day * 7}/week
-                  </div>
-                </div>
-                <button
-                  onClick={() => navigate(`/items/${item._id}`)}
-                  className="w-full bg-gray-800 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transform hover:scale-105 transition-all duration-200"
-                >
-                  Rent Now
-                </button>
 
               </div>
+              {/* --- End Details Section --- */}
+
             </div>
           ))}
         </div>
+        {/* --- End Items Grid --- */}
 
+        {/* --- No Items Found --- */}
         {filteredItems.length === 0 && (
-          <div className="text-center py-12">
-            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">
-              No featured items available {location && `for "${location}"`}
+          <div className="text-center py-20 bg-gray-50 rounded-xl mt-10">
+            <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-600 text-xl font-medium">
+              No featured items available {location && `for "${location}"`} at the moment.
             </p>
+            <p className="text-gray-500 mt-2">Check back soon or try a different location.</p>
           </div>
         )}
+        {/* --- End No Items Found --- */}
+
       </div>
     </section>
   );

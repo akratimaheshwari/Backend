@@ -14,23 +14,37 @@ const ItemCard = ({ item, handleLike, onAddToCart }) => {
   const fetchWishlist = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) return; // skip fetch if not logged in
+
       const res = await fetch("/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) {
+        console.error("Failed to fetch wishlist:", res.status);
+        return;
+      }
+
       const wishlistItems = await res.json();
 
-      const isInWishlist = wishlistItems.some((wishItem) => {
-        return wishItem._id === item._id;
-      });
+      if (!Array.isArray(wishlistItems)) {
+        console.error("Wishlist is not an array:", wishlistItems);
+        return;
+      }
 
-      setIsLiked(isInWishlist); // ✅ this sets ❤️ correctly after refresh
+      const isInWishlist = wishlistItems.some(
+        (wishItem) => wishItem._id === item._id
+      );
+
+      setIsLiked(isInWishlist); 
     } catch (err) {
       console.error("Error loading wishlist:", err);
     }
   };
 
   fetchWishlist();
-}, [item._id]);  // ✅ this will run only when the item changes
+}, [item._id]);
+
 
 const toggleWishlist = async () => {
   try {
