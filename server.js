@@ -19,7 +19,8 @@ import returnRoutes from './routes/returnRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import categoryRoutes from "./routes/categoryRoutes.js";
 import addressRoutes from './routes/addressRoutes.js';
-
+import renterRoutes from './routes/renterRoutes.js';
+import ownerRoutes from './routes/ownerRoutes.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,7 +49,8 @@ app.use('/api/addresses', addressRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/cart', cartRoutes);
-
+app.use('/api/renter', renterRoutes);
+app.use('/api/owner', ownerRoutes);
 //react connection
 
 // app.use(express.static(path.join(__dirname, 'rentkart-client', 'build')));

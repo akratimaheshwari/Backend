@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import RenterDashboard from '../components/RenterDashboard';
-import OwnerDashboard from '../components/OwnerDashboard';
-import { useNavigate ,Link} from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import RenterDashboard from "../components/RenterDashboard";
+import OwnerDashboard from "../components/OwnerDashboard";
+import { useNavigate, Link } from "react-router-dom";
 import {
   User,
   Mail,
@@ -17,86 +17,121 @@ import {
   Plus,
   Eye,
   Truck,
-  Shield
-} from 'lucide-react';
+  Shield,
+} from "lucide-react";
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('renter');
+  const [activeTab, setActiveTab] = useState("renter");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-  const fetchUser = async () => {
-    const token = localStorage.getItem('token');
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      navigate('/login'); // redirect if no token
-      return;
-    }
+      if (!token) {
+        navigate("/login"); // redirect if no token
+        return;
+      }
 
-    try {
-      const res = await fetch('/api/users/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        const res = await fetch("/api/users/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (!res.ok) throw new Error('Unauthorized');
+        if (!res.ok) throw new Error("Unauthorized");
 
-      const data = await res.json();
-      setUser(data);
-      localStorage.setItem('user', JSON.stringify(data));
-    } catch (err) {
-      console.error('Failed to fetch user:', err);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login'); // redirect on error
-    } finally {
-      setIsLoading(false); // mark loading complete
-    }
-  };
+        const data = await res.json();
+        setUser(data);
+        localStorage.setItem("user", JSON.stringify(data));
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login"); // redirect on error
+      } finally {
+        setIsLoading(false); // mark loading complete
+      }
+    };
 
-  fetchUser();
-}, [navigate]);
-
-
-
-
+    fetchUser();
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
   };
 
   const quickActions = {
     renter: [
-      { icon: Eye, label: 'Browse Items', color: 'bg-gray-600 hover:bg-gray-700', action: () => navigate('/items') },
-      { icon: Heart, label: 'My Wishlist', color: 'bg-gray-700 hover:bg-gray-800', action: () => navigate('/wishlist') },
-      { icon: Calendar, label: 'My Orders', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/orders') },
-      { icon: DollarSign, label: 'Payment History', color: 'bg-gray-800 hover:bg-gray-900', action: () => navigate('/payments') }
+      {
+        icon: Eye,
+        label: "Browse Items",
+        color: "bg-gray-600 hover:bg-gray-700",
+        action: () => navigate("/items"),
+      },
+      {
+        icon: Heart,
+        label: "My Wishlist",
+        color: "bg-gray-700 hover:bg-gray-800",
+        action: () => navigate("/wishlist"),
+      },
+      {
+        icon: Calendar,
+        label: "My Orders",
+        color: "bg-gray-500 hover:bg-gray-600",
+        action: () => navigate("/orders"),
+      },
+      {
+        icon: DollarSign,
+        label: "Payment History",
+        color: "bg-gray-800 hover:bg-gray-900",
+        action: () => navigate("/payments"),
+      },
     ],
     owner: [
-      { icon: Plus, label: 'Add New Item', color: 'bg-gray-600 hover:bg-gray-700', action: () => navigate('/add-item') },
-      { icon: Package, label: 'My Listings', color: 'bg-gray-700 hover:bg-gray-800', action: () => navigate('/my-listings') },
-      { icon: Truck, label: 'Rental Orders', color: 'bg-gray-500 hover:bg-gray-600', action: () => navigate('/owner-order') },
-      { icon: DollarSign, label: 'Earnings', color: 'bg-gray-800 hover:bg-gray-900', action: () => navigate('/earnings') }
-    ]
+      {
+        icon: Plus,
+        label: "Add New Item",
+        color: "bg-gray-600 hover:bg-gray-700",
+        action: () => navigate("/add-item"),
+      },
+      {
+        icon: Package,
+        label: "My Listings",
+        color: "bg-gray-700 hover:bg-gray-800",
+        action: () => navigate("/my-listings"),
+      },
+      {
+        icon: Truck,
+        label: "Rental Orders",
+        color: "bg-gray-500 hover:bg-gray-600",
+        action: () => navigate("/owner-order"),
+      },
+      {
+        icon: DollarSign,
+        label: "Earnings",
+        color: "bg-gray-800 hover:bg-gray-900",
+        action: () => navigate("/earnings"),
+      },
+    ],
   };
 
   if (isLoading) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-2xl shadow-lg">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600 text-center">Loading your dashboard...</p>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-center">Loading your dashboard...</p>
+        </div>
       </div>
-    </div>
-  );
-}
-
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,10 +144,7 @@ const UserDashboard = () => {
               <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
                 <Package className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                RentKart
-              </h1>
-
+              <h1 className="text-2xl font-bold text-gray-800">RentKart</h1>
             </div>
 
             {/* User Profile Section */}
@@ -128,32 +160,35 @@ const UserDashboard = () => {
                 Home
               </Link>
 
-
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   {user.avatar ? (
-  <img
-    src={user.avatar}
-    alt={user.name}
-    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-  />
-) : (
-  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-semibold text-sm uppercase border-2 border-gray-200">
-    {user.name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .slice(0, 2)}
-  </div>
-)}
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-semibold text-sm uppercase border-2 border-gray-200">
+                      {user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
+                  )}
 
                   <div className="text-left hidden sm:block">
-                    <p className="text-sm font-semibold text-gray-800">{user.name}</p>
+                    <p className="text-sm font-semibold text-gray-800">
+                      {user.name}
+                    </p>
                     <p className="text-xs text-gray-500">
-                      {user.verified && <Shield className="w-3 h-3 inline text-gray-600 mr-1" />}
+                      {user.verified && (
+                        <Shield className="w-3 h-3 inline text-gray-600 mr-1" />
+                      )}
                       Verified User
                     </p>
                   </div>
@@ -163,11 +198,13 @@ const UserDashboard = () => {
                 {showProfileMenu && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-semibold text-gray-800">{user.name}</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {user.name}
+                      </p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
                     <button
-                      onClick={() => navigate('/profile')}
+                      onClick={() => navigate("/profile")}
                       className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <Settings className="w-4 h-4 mr-3" />
@@ -192,7 +229,7 @@ const UserDashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.name.split(' ')[0]}! 👋
+            Welcome back, {user.name.split(" ")[0]}! 👋
           </h2>
           <p className="text-gray-600">
             Manage your rentals and listings from your personalized dashboard
@@ -207,7 +244,7 @@ const UserDashboard = () => {
               Personal Information
             </h3>
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate("/profile")}
               className="text-gray-600 hover:text-gray-800 text-sm font-medium hover:underline"
             >
               Edit Profile
@@ -218,24 +255,36 @@ const UserDashboard = () => {
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
               <Mail className="w-5 h-5 text-gray-500" />
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Email</p>
-                <p className="text-sm font-medium text-gray-800">{user.email ?? 'john.doe@example.com'}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  Email
+                </p>
+                <p className="text-sm font-medium text-gray-800">
+                  {user.email ?? "john.doe@example.com"}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
               <Phone className="w-5 h-5 text-gray-500" />
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Phone</p>
-                <p className="text-sm font-medium text-gray-800">{user.phone}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  Phone
+                </p>
+                <p className="text-sm font-medium text-gray-800">
+                  {user.phone}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
               <MapPin className="w-5 h-5 text-gray-500" />
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Address</p>
-                <p className="text-sm font-medium text-gray-800">{user.address}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  Address
+                </p>
+                <p className="text-sm font-medium text-gray-800">
+                  {user.address}
+                </p>
               </div>
             </div>
           </div>
@@ -245,20 +294,22 @@ const UserDashboard = () => {
         <div className="flex justify-center mb-8">
           <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-200">
             <button
-              onClick={() => setActiveTab('renter')}
-              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'renter'
-                  ? 'bg-gray-800 text-white shadow-lg'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                }`}
+              onClick={() => setActiveTab("renter")}
+              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
+                activeTab === "renter"
+                  ? "bg-gray-800 text-white shadow-lg"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+              }`}
             >
               🏠 Renter Dashboard
             </button>
             <button
-              onClick={() => setActiveTab('owner')}
-              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'owner'
-                  ? 'bg-gray-700 text-white shadow-lg'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                }`}
+              onClick={() => setActiveTab("owner")}
+              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
+                activeTab === "owner"
+                  ? "bg-gray-700 text-white shadow-lg"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+              }`}
             >
               🏢 Owner Dashboard
             </button>
@@ -267,7 +318,9 @@ const UserDashboard = () => {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            Quick Actions
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions[activeTab].map((action, index) => {
               const IconComponent = action.icon;
@@ -287,7 +340,7 @@ const UserDashboard = () => {
 
         {/* Dashboard Content */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          {activeTab === 'renter' ? <RenterDashboard /> : <OwnerDashboard />}
+          {activeTab === "renter" ? <RenterDashboard /> : <OwnerDashboard />}
         </div>
       </div>
     </div>
@@ -295,4 +348,3 @@ const UserDashboard = () => {
 };
 
 export default UserDashboard;
-
