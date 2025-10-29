@@ -31,7 +31,10 @@ const app = express();
 
 // middleware
 app.use(express.json());
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:3000', // React frontend URL
+  credentials: true,                // allow cookies and credentials if needed
+}));
 app.use(express.urlencoded({ extended: true }));
 console.log(" JWT_SECRET in server.js:",process.env.JWT_SECRET);
 
