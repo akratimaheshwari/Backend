@@ -143,7 +143,7 @@ const Wishlist = () => {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="flex flex-col items-center space-y-4">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-rose-500"></div>
-                    <p className="text-gray-600 font-medium text-lg">Loading your wishlist...</p>
+                    <p className="text-gray-600 font-medium text-lg">Getting your wishlist ready…</p>
                 </div>
             </div>
         );
