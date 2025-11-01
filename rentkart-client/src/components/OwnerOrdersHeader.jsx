@@ -245,7 +245,7 @@ const OwnerOrdersHeader = ({
                   }}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-white transition-colors duration-200"
                 >
-                  Clear Filters
+                  Clear Fillers
                 </button>
               </div>
             </div>
