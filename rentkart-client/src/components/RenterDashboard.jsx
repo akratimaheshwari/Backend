@@ -186,13 +186,8 @@ const RenterDashboard = () => {
                                                 {rental.status}
                                             </span>
                                             <p className="font-extrabold text-lg text-green-700">₹{rental.dailyRate}/day</p>
-                                            {/* 🔑 ACTIVE RENTALS: "View Details" goes to Order Details */}
-                                            <button 
-                                                onClick={() => navigate(`/orders/${rental.orderId}`)} 
-                                                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                                            >
-                                                View Details
-                                            </button>
+                                            {/*  ACTIVE RENTALS: "View Details" goes to Order Details */}
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -224,7 +219,7 @@ const RenterDashboard = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="font-semibold text-sm text-gray-700">₹{item.dailyRate}/day</p>
-                                        {/* 🔑 WISHLIST: "Rent It" goes to Item Details */}
+                                        {/*  WISHLIST: "Rent It" goes to Item Details */}
                                         <button 
                                             onClick={() => navigate(`/items/${item.id}`)}
                                             className="text-xs text-emerald-600 hover:text-emerald-800 mt-0.5"
@@ -266,7 +261,7 @@ const RenterDashboard = () => {
                                 <div className="text-right">
                                     {/* RENDER TOTAL AMOUNT */}
                                     <p className="font-extrabold text-lg text-red-600">Total: ₹{history.totalAmount.toLocaleString('en-IN')}</p>
-                                    <button className="text-sm text-blue-600 hover:text-blue-800 font-medium mt-1">Leave Review</button>
+                                    
                                 </div>
                             </div>
                         ))
