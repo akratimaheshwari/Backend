@@ -32,11 +32,21 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
-export const Header = ({ location, setLocation }) => {
+export const Header = ({ location, setLocation, search, setSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
-
+  const navigate = useNavigate();
+  // Handler for form submission (prevents page reload and can trigger actions)
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (search.trim()) {
+    // Navigate to the search results page with query param
+    navigate(`/search?q=${encodeURIComponent(search.trim())}`);
+  }
+    // In a real app, you might navigate here or collapse the mobile search bar
+    //console.log("Search submitted for:", search);
+  };
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
@@ -50,18 +60,25 @@ export const Header = ({ location, setLocation }) => {
             <h1 className="text-2xl font-bold text-gray-800">RentKart</h1>
           </div>
 
-          {/* Search Bar and Location */}
+          {/* Search Bar and Location (Desktop) */}
           <div className="hidden md:flex items-center flex-1 max-w-xl mx-8 space-x-4">
-            <div className="relative w-full">
+            
+            {/* Desktop Search Input - Now fully bound */}
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
               <input
                 type="text"
                 placeholder="Search for items, categories..."
+                // BINDING: Controls the search state
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl"
               />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-lg">
+              <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-lg">
                 <Search className="w-4 h-4" />
               </button>
-            </div>
+            </form>
+            
+            {/* Location Input (Unchanged - already working) */}
             <div className="flex items-center space-x-2">
               <MapPin className="w-5 h-5 text-gray-500" />
               <input
@@ -74,7 +91,7 @@ export const Header = ({ location, setLocation }) => {
             </div>
           </div>
 
-          {/* Desktop Nav */}
+          {/* Desktop Nav (Unchanged) */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-gray-600 hover:text-gray-800 font-medium">Home</Link>
             <Link to="/items" className="text-gray-600 hover:text-gray-800 font-medium">Browse Items</Link>
@@ -109,7 +126,7 @@ export const Header = ({ location, setLocation }) => {
           </div>
         </div>
 
-        {/* Mobile Location */}
+        {/* Mobile Location (Unchanged) */}
         <div className="md:hidden mt-2 flex items-center gap-2 px-2 pb-2">
           <MapPin className="w-4 h-4 text-gray-500" />
           <input
@@ -121,41 +138,49 @@ export const Header = ({ location, setLocation }) => {
           />
         </div>
 
-        {/* Mobile Search Input */}
+        {/* Mobile Search Input - Now fully bound */}
         {isSearchOpen && (
           <div className="md:hidden mt-2 px-1 pb-2">
-            <input
-              type="text"
-              placeholder="Search for items, categories..."
-              className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl"
-            />
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search for items, categories..."
+                //  BINDING: Controls the search state
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 rounded-xl"
+              />
+              <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-lg">
+                <Search className="w-4 h-4" />
+              </button>
+            </form>
           </div>
         )}
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu (Unchanged) */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4">
             <nav className="space-y-3">
-              <a href="/home" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Home</a>
-              <a href="/items" className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Browse Items</a>
-              <a href="/cart" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
+              <Link to="/" onClick={() => setIsMenuOpen(false)} className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Home</Link>
+              <Link to="/items" onClick={() => setIsMenuOpen(false)} className="block text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors">Browse Items</Link>
+              <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
                 <ShoppingCart className="w-5 h-5" />
                 <span>Cart</span>
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
-              </a>
-              <a href="/orders" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
+              </Link>
+              <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 py-2 transition-colors">
                 <ClipboardList className="w-5 h-5" />
                 <span>Orders</span>
-              </a>
+              </Link>
               {isLoggedIn ? (
-                <a href="/dashboard" className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                   <UserCircle className="w-5 h-5" />
                   <span>Dashboard</span>
-                </a>
+                </Link>
               ) : (
-                <a href="/signup" className="block bg-gray-800 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors">
+                <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="block bg-gray-800 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors">
                   Join Now
-                </a>
+                </Link>
               )}
             </nav>
           </div>
@@ -466,9 +491,7 @@ export const CategorySection = ({ categories }) => (
                 <h3 className="text-center font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
                   {category.title}
                 </h3>
-                <p className="text-center text-sm text-gray-500 mt-1">
-                  {category.itemCount || 0} items
-                </p>
+                
               </div>
             </Link>
           ) : null
@@ -680,7 +703,7 @@ export const Footer = () => (
             <h3 className="text-2xl font-bold">RentKart</h3>
           </div>
           <p className="text-gray-400 mb-6 max-w-md">
-            Why buy when you can rent? Discover, lend, and earn with RentKart — your smart rental marketplace.
+            why buy when you can rent? Discover, lend, and earn with RentKart — your smart rental marketplace.
           </p>
           <div className="flex space-x-4">
             <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">

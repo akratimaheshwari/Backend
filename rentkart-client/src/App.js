@@ -21,6 +21,7 @@ import HowItWorks from './pages/HowItWorks';
 import AboutUs from './pages/AboutUs';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './pages/ProtectedRoute';
+import SearchResults from "./pages/SearchResults";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -56,6 +57,7 @@ function AppRoutes() {
   <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
   <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
   <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+  <Route path="/search" element={<SearchResults />} />
 
   <Route path="*" element={<NotFound />} />
 </Routes>
@@ -74,9 +76,7 @@ function App() {
     <AppRoutes />
   </Router>
   
-</>
-
-    
+</>   
   );
 }
 

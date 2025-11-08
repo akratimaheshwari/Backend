@@ -4,7 +4,7 @@ import { getItemReviews, createItemReview } from '../controllers/reviewControlle
 import { verifyToken } from '../middleware/authMiddleware.js';
 import upload from '../middleware/upload.js'; 
 import Category from "../models/category.js";
-import Item from "../models/item.js"; // ✅ Add this line
+import Item from "../models/item.js"; //  Add this line
 
 // const upload = multer({ storage });
 const router = express.Router();
@@ -20,9 +20,46 @@ router.get('/owner', verifyToken, async (req, res) => {
   }
 });
 router.get('/featured', getFeaturedItems);
+router.get("/search", async (req, res) => {
+  try {
+    const { q, loc } = req.query;
+    console.log("Incoming search:", { q, loc });
 
+    if (!q && !loc) {
+      return res.status(400).json({ message: "Search query or location is required" });
+    }
 
-router.put('/:id', verifyToken, updateItem);   // 🔐 Protected
+    let searchCriteria = {};
+
+    if (q) {
+      const searchRegex = new RegExp(q, 'i');
+      searchCriteria.$or = [
+        { title: { $regex: searchRegex } },
+        { name: { $regex: searchRegex } },
+       
+      ];
+    }
+
+    if (loc) {
+      const locationCriteria = { location: { $regex: new RegExp(loc, 'i') } };
+      searchCriteria = searchCriteria.$or
+        ? { $and: [searchCriteria, locationCriteria] }
+        : locationCriteria;
+    }
+
+    console.log("Final searchCriteria:", JSON.stringify(searchCriteria, null, 2));
+
+    const items = await Item.find(searchCriteria);
+    console.log("Found items:", items.length);
+
+    res.json(items);
+  } catch (error) {
+    console.error("Search API Error:", error.message);
+    res.status(500).json({ message: "Server error during search", error: error.message });
+  }
+});
+
+router.put('/:id', verifyToken, updateItem);   //  Protected
 router.delete('/:id', verifyToken, deleteItem);
 router.get('/:id', async (req, res) => {
   try {
@@ -63,6 +100,7 @@ router.post('/check-availability', verifyToken, checkItemAvailability);
 
 router.get('/:id/reviews', getItemReviews); // public read
 router.post('/:id/reviews', verifyToken, createItemReview); // protected: add review
+
 
 
 export default router;

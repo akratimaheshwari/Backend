@@ -60,7 +60,7 @@ import { Package, Mail, Phone,Facebook,Twitter,
           <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6 mb-4 md:mb-0">
             <div className="flex items-center space-x-2 text-gray-400">
               <Mail className="w-4 h-4" />
-              <span>support@rentkart.com</span>
+              <span>suppor@rentkart.com</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-400">
               <Phone className="w-4 h-4" />

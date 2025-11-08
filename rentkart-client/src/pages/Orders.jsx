@@ -19,7 +19,8 @@ const Orders = () => {
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [trackingOrder, setTrackingOrder] = useState(null);
   const [location, setLocation] = useState("");
-    const [debouncedLocation, setDebouncedLocation] = useState(location);
+  const [debouncedLocation, setDebouncedLocation] = useState(location);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -232,7 +233,8 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ✅ Order Header with search/filter/export */}
-      <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} />
+      <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn}search={search}      // 💡 ADD THIS PROP
+            setSearch={setSearch} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}

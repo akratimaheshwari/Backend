@@ -15,6 +15,7 @@ const ItemPage = () => {
   const [categories, setCategories] = useState([]);
   const [location, setLocation] = useState("");
   const [debouncedLocation, setDebouncedLocation] = useState(location);
+ 
   const isLoggedIn = !!localStorage.getItem('token');
 
   // Debounce location input by 1000ms
@@ -159,7 +160,8 @@ const ItemPage = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header */}
-      <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} />
+      <Header location={location} setLocation={setLocation} isLoggedIn={isLoggedIn} search={search}      // 💡 ADD THIS PROP
+            setSearch={setSearch}/>
 
       {/* Main content container - reduced top padding */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
