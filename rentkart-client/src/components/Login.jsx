@@ -241,7 +241,7 @@ const Login = () => {
             <GoogleLogin
               onSuccess={(credentialResponse) => {
                 // Send credential to backend running on port 5000
-                fetch('http://localhost:5000/api/auth/google-login', {
+                fetch('/api/auth/google-login', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ credential: credentialResponse.credential }),
