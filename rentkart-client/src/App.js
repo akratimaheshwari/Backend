@@ -25,6 +25,7 @@ import SearchResults from "./pages/SearchResults";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PaymentHistory from './pages/PaymentHistory';
+import OwnerEarnings from './pages/OwnerEarning';
 
 function AppRoutes() {
   const location = useLocation();
@@ -59,6 +60,7 @@ function AppRoutes() {
   <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
   <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
   <Route path="/payments" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
+  <Route path="/earning" element={<ProtectedRoute><OwnerEarnings /></ProtectedRoute>} />
   <Route path="/search" element={<SearchResults />} />
 
   <Route path="*" element={<NotFound />} />
