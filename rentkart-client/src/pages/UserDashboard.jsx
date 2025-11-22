@@ -132,6 +132,7 @@ const UserDashboard = () => {
       </div>
     );
   }
+   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">

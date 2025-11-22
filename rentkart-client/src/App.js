@@ -60,7 +60,7 @@ function AppRoutes() {
   <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
   <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
   <Route path="/payments" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
-  <Route path="/earning" element={<ProtectedRoute><OwnerEarnings /></ProtectedRoute>} />
+  <Route path="/earnings" element={<ProtectedRoute><OwnerEarnings /></ProtectedRoute>} />
   <Route path="/search" element={<SearchResults />} />
 
   <Route path="*" element={<NotFound />} />
