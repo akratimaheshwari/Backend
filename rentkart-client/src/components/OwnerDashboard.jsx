@@ -237,7 +237,7 @@ const OwnerDashboard = () => {
                                                 <DollarSign className="w-4 h-4 mr-1 text-green-600" />
                                                 ₹{booking.amount.toLocaleString('en-IN')} Total
                                             </span>
-                                            <button className="text-blue-600 hover:text-blue-800">View</button>
+                                            
                                         </div>
                                     </div>
                                 </div>
