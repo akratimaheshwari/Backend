@@ -33,8 +33,7 @@ const OwnerOrdersHeader = ({
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'My Items', href: '/my-listings', icon: List },
-    { name: 'Orders', href: '/owner-order', icon: ClipboardList, active: true },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Orders', href: '/owner-order', icon: ClipboardList, active: true }
   ];
 
   return (
